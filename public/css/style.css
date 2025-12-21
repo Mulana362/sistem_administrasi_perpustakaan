@@ -1,0 +1,63 @@
+/* ============================
+   HERO DASHBOARD
+============================ */
+.dashboard-hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.35), transparent 55%);
+    pointer-events: none;
+}
+
+/* ============================
+   CARD / STATISTICS
+============================ */
+.stat-card {
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.icon-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+/* ============================
+   GRADIENT COLORS
+============================ */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #15803d, #16a34a);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #fde68a, #fbbf24);
+}
+
+/* ============================
+   TABLE STYLING
+============================ */
+.table thead th {
+    border-bottom-width: 0;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f3f4f6;
+}
