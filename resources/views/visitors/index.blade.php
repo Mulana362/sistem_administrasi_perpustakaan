@@ -317,12 +317,6 @@
                 <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary btn-pill">
                     🏠 Dashboard
                 </a>
-                <a href="#" class="btn btn-warning btn-pill text-dark">
-                    🖨 Cetak PDF
-                </a>
-                <a href="{{ route('visitors.export', ['from' => request('from'), 'to' => request('to')]) }}"
-                   class="btn btn-success btn-pill text-white">
-                    ⬇ Export Excel
                 </a>
             </div>
         </div>

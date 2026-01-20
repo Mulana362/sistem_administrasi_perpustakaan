@@ -472,7 +472,8 @@
                             <div class="book-title-cell">{{ $book->title }}</div>
                             @if($book->description)
                                 <div class="book-desc">
-                                    {{ \Illuminate\Support\Str::limit($book->description, 80) }}
+                                    {{-- INI DOANG YANG DIUBAH: tampilkan full --}}
+                                    {{ $book->description }}
                                 </div>
                             @endif
                         </td>
@@ -587,26 +588,22 @@
                             </span>
                         </div>
 
-                        {{-- NAMA --}}
                         <div class="mb-2">
                             <label class="form-label">Nama Lengkap</label>
                             <input type="text" name="student_name" class="form-control" required>
                         </div>
 
-                        {{-- NIS --}}
                         <div class="mb-2">
                             <label class="form-label">NIS</label>
                             <input type="text" name="student_nis" class="form-control" required>
                         </div>
 
-                        {{-- KELAS --}}
                         <div class="mb-2">
                             <label class="form-label">Kelas</label>
                             <input type="text" name="student_class" class="form-control"
                                    placeholder="Contoh: 7A / 8B / 9C" required>
                         </div>
 
-                        {{-- LAMA PINJAM --}}
                         <div class="mb-2">
                             <label class="form-label">Lama Pinjam</label>
                             <select name="duration" class="form-select" required>
@@ -629,7 +626,7 @@
     </div>
 </div>
 
-{{-- SCRIPT UNTUK ISI DATA MODAL + AUTO-FILL NIS --}}
+{{-- SCRIPT UNTUK ISI DATA MODAL + AUTO-FILL NIS (TANPA NOTIF POPUP) --}}
 @push('scripts')
 <script>
     // Isi data buku ke dalam modal saat tombol "Pinjam Buku" diklik
@@ -654,35 +651,41 @@
             imgEl.classList.remove('d-none');
         } else {
             imgEl.classList.add('d-none');
+            imgEl.src = '';
         }
     });
 
-    // AUTO-FILL: ketika NIS diubah, ambil data anggota dan isi nama + kelas
     document.addEventListener('DOMContentLoaded', function () {
         const nisInput = document.querySelector('input[name="student_nis"]');
         if (!nisInput) return;
 
-        nisInput.addEventListener('change', function () {
+        nisInput.addEventListener('change', async function () {
             const nis = this.value.trim();
             if (!nis) return;
 
-            fetch('/api/member/' + encodeURIComponent(nis))
-                .then(res => res.ok ? res.json() : Promise.reject())
-                .then(data => {
-                    if (data.not_found) {
-                        alert('NIS tidak ditemukan!');
-                        return;
-                    }
+            const nameInput  = document.querySelector('input[name="student_name"]');
+            const classInput = document.querySelector('input[name="student_class"]');
 
-                    const nameInput  = document.querySelector('input[name="student_name"]');
-                    const classInput = document.querySelector('input[name="student_class"]');
-
-                    if (nameInput)  nameInput.value  = data.name  || '';
-                    if (classInput) classInput.value = data.class || '';
-                })
-                .catch(() => {
-                    alert('Gagal mengambil data siswa. Coba lagi nanti.');
+            try {
+                const res = await fetch('/api/member/' + encodeURIComponent(nis), {
+                    headers: { 'Accept': 'application/json' }
                 });
+
+                let data = null;
+                try { data = await res.json(); } catch (e) {}
+
+                if (!res.ok || !data || data.not_found) {
+                    if (nameInput)  nameInput.value  = '';
+                    if (classInput) classInput.value = '';
+                    return;
+                }
+
+                if (nameInput)  nameInput.value  = data.name  || '';
+                if (classInput) classInput.value = data.class || '';
+            } catch (e) {
+                if (nameInput)  nameInput.value  = '';
+                if (classInput) classInput.value = '';
+            }
         });
     });
 </script>

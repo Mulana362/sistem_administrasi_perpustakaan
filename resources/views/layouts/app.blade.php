@@ -7,6 +7,16 @@
     {{-- supaya title bisa diganti dari tiap halaman --}}
     <title>@yield('title', 'Perpustakaan SMPN 1 Bandung')</title>
 
+    {{-- MATIKAN ALERT NATIVE (GA NGUBAH UI) --}}
+    <script>
+    (function () {
+        const noop = function () {};
+        window.alert = noop;
+        window.confirm = function () { return true; };
+        window.prompt = function () { return null; };
+    })();
+    </script>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
