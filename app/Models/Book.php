@@ -14,12 +14,14 @@ class Book extends Model
 
     // Kolom yang boleh diisi mass-assignment
     protected $fillable = [
-        'title',
-        'author',
-        'publisher',
-        'year',
-        'stock',
-        'description',
-        'cover',
-    ];
+    'book_code',
+    'title',
+    'description',
+    'author',
+    'publisher',
+    'year',
+    'stock',
+    'cover',
+];
+
 }

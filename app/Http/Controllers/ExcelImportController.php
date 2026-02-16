@@ -19,8 +19,7 @@ class ExcelImportController extends Controller
      */
     public function index()
     {
-        // Kalau tabel log belum ada (misal DB baru), kirim koleksi kosong
-        if (! Schema::hasTable('excel_import_logs')) {
+        if (!Schema::hasTable('excel_import_logs')) {
             $logs = collect();
         } else {
             $logs = ExcelImportLog::orderByDesc('imported_at')
@@ -34,7 +33,18 @@ class ExcelImportController extends Controller
     /**
      * Import data BUKU dari Excel.
      * Form: input name="file_books"
-     * Route: POST admin/import/books   (name: admin.import.books)
+     * Route: POST admin/import/books (name: admin.import.books)
+     *
+     * Format kolom Excel (A sampai I):
+     * A: No (opsional, tidak dipakai)
+     * B: ID BUKU (book_code) contoh BK-001
+     * C: COVER (nama file di storage/covers atau URL)
+     * D: JUDUL
+     * E: DESKRIPSI
+     * F: PENGARANG
+     * G: PENERBIT
+     * H: TAHUN
+     * I: STOCK
      */
     public function importBooks(Request $request)
     {
@@ -44,13 +54,13 @@ class ExcelImportController extends Controller
 
         $file = $request->file('file_books');
 
-        // Simpan dulu file Excel ke storage (untuk arsip)
+        // Simpan file Excel untuk arsip
         $storedPath = $file->store('imports/books', 'public');
 
         // Load Excel
         $spreadsheet = IOFactory::load($file->getRealPath());
         $sheet       = $spreadsheet->getActiveSheet();
-        $rows        = $sheet->toArray(null, true, true, true); // pakai index A,B,C,...
+        $rows        = $sheet->toArray(null, true, true, true); // index A,B,C,...
 
         $createdIds = [];
 
@@ -60,62 +70,60 @@ class ExcelImportController extends Controller
             $firstRow = true;
 
             foreach ($rows as $row) {
-                // Lewati baris header (baris pertama)
+                // skip header
                 if ($firstRow) {
                     $firstRow = false;
                     continue;
                 }
 
-                // Ambil data sesuai kolom Excel kamu
-                $coverName   = trim($row['B'] ?? ''); // COVER
-                $title       = trim($row['C'] ?? ''); // JUDUL
-                $description = trim($row['D'] ?? ''); // DESKRIPSI
-                $author      = trim($row['E'] ?? ''); // PENGARANG
-                $publisher   = trim($row['F'] ?? ''); // PENERBIT
-                $yearRaw     = trim($row['G'] ?? ''); // TAHUN
-                $stockRaw    = trim($row['H'] ?? ''); // STOCK
+                // ✅ Ambil data sesuai kolom Excel kamu (A sampai I)
+                $no          = trim($row['A'] ?? ''); // No (ga dipakai)
+                $bookCode    = trim($row['B'] ?? ''); // ID BUKU (BK-001)
+                $coverName   = trim($row['C'] ?? ''); // COVER
+                $title       = trim($row['D'] ?? ''); // JUDUL
+                $description = trim($row['E'] ?? ''); // DESKRIPSI
+                $author      = trim($row['F'] ?? ''); // PENGARANG
+                $publisher   = trim($row['G'] ?? ''); // PENERBIT
+                $yearRaw     = trim($row['H'] ?? ''); // TAHUN
+                $stockRaw    = trim($row['I'] ?? ''); // STOCK
 
                 // Skip baris kosong
-                if ($title === '' && $author === '' && $publisher === '') {
+                if ($title === '' && $author === '' && $publisher === '' && $bookCode === '') {
                     continue;
                 }
 
-                // Konversi tahun dan stok ke integer (atau null)
-                $year = is_numeric($yearRaw) ? (int) $yearRaw : null;
+                // Konversi tahun dan stok (kasih default biar gak error)
+                $year  = is_numeric($yearRaw) ? (int) $yearRaw : 0;  // ✅ default 0 biar year gak null
                 $stock = is_numeric($stockRaw) ? (int) $stockRaw : 0;
 
                 // ====== HANDLE COVER ======
                 $coverPath = null;
 
                 if ($coverName !== '') {
-                    // 1) Kalau isinya URL gambar -> download otomatis
+                    // 1) kalau URL -> download otomatis
                     if (filter_var($coverName, FILTER_VALIDATE_URL)) {
                         try {
                             $imageContent = @file_get_contents($coverName);
-
                             if ($imageContent !== false) {
-                                // generate nama file dari judul + uniqid
                                 $ext = 'jpg';
-                                if (str_contains($coverName, '.png')) {
-                                    $ext = 'png';
-                                } elseif (str_contains($coverName, '.jpeg')) {
-                                    $ext = 'jpeg';
-                                }
+                                $lower = strtolower($coverName);
 
-                                $fileName  = uniqid('cover_') . '.' . $ext;
-                                $fullPath  = 'covers/' . $fileName;
+                                if (str_contains($lower, '.png'))  $ext = 'png';
+                                if (str_contains($lower, '.jpeg')) $ext = 'jpeg';
+                                if (str_contains($lower, '.webp')) $ext = 'webp';
+
+                                $fileName = uniqid('cover_') . '.' . $ext;
+                                $fullPath = 'covers/' . $fileName;
 
                                 Storage::disk('public')->put($fullPath, $imageContent);
-
                                 $coverPath = $fullPath;
                             }
                         } catch (\Throwable $e) {
-                            // kalau gagal download, biarkan cover null
+                            $coverPath = null;
                         }
                     } else {
-                        // 2) Kalau hanya nama file -> cek di storage/app/public/covers
+                        // 2) kalau nama file lokal -> cek storage public/covers/
                         $guessPath = 'covers/' . $coverName;
-
                         if (Storage::disk('public')->exists($guessPath)) {
                             $coverPath = $guessPath;
                         }
@@ -123,20 +131,44 @@ class ExcelImportController extends Controller
                 }
                 // ====== END HANDLE COVER ======
 
-                $book = Book::create([
-                    'title'       => $title,
-                    'description' => $description ?: null,
-                    'author'      => $author ?: null,
-                    'publisher'   => $publisher ?: null,
-                    'year'        => $year,
-                    'stock'       => $stock,
-                    'cover'       => $coverPath, // null kalau tidak ada
-                ]);
+                // ✅ wajib punya judul biar data rapi
+                if ($title === '') {
+                    continue;
+                }
+
+                // ✅ updateOrCreate berdasarkan book_code (BK-001)
+                // kalau book_code kosong, fallback create biasa
+                if ($bookCode !== '') {
+                    $book = Book::updateOrCreate(
+                        ['book_code' => $bookCode],
+                        [
+                            'book_code'   => $bookCode,
+                            'title'       => $title,
+                            'description' => $description ?: null,
+                            'author'      => $author ?: null,
+                            'publisher'   => $publisher ?: null,
+                            'year'        => $year,   // ✅ aman: gak null
+                            'stock'       => $stock,
+                            'cover'       => $coverPath,
+                        ]
+                    );
+                } else {
+                    $book = Book::create([
+                        'book_code'   => null,
+                        'title'       => $title,
+                        'description' => $description ?: null,
+                        'author'      => $author ?: null,
+                        'publisher'   => $publisher ?: null,
+                        'year'        => $year,   // ✅ aman: gak null
+                        'stock'       => $stock,
+                        'cover'       => $coverPath,
+                    ]);
+                }
 
                 $createdIds[] = $book->id;
             }
 
-            // Simpan log import
+            // Simpan log import (kalau tabel ada)
             if (Schema::hasTable('excel_import_logs')) {
                 ExcelImportLog::create([
                     'type'          => 'books',
@@ -161,7 +193,7 @@ class ExcelImportController extends Controller
     /**
      * Import data ANGGOTA / SISWA.
      * Form: input name="file_members"
-     * Route: POST admin/import/members   (name: admin.import.members)
+     * Route: POST admin/import/members (name: admin.import.members)
      */
     public function importMembers(Request $request)
     {
@@ -189,7 +221,6 @@ class ExcelImportController extends Controller
                     continue;
                 }
 
-                // Contoh struktur:
                 // A: NIS, B: Nama, C: Kelas, D: Jenis Kelamin, E: No HP, F: Alamat
                 $nis    = trim($row['A'] ?? '');
                 $name   = trim($row['B'] ?? '');
@@ -229,7 +260,7 @@ class ExcelImportController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Import data anggota / siswa berhasil. Jumlah data: ' . count($createdIds));
+            return back()->with('success', 'Import data anggota berhasil. Jumlah data: ' . count($createdIds));
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -238,37 +269,47 @@ class ExcelImportController extends Controller
     }
 
     /**
-     * Hapus satu batch import (opsional).
+     * ✅ Hapus satu batch import log + data yg dibuat (opsional).
      * Route: DELETE admin/import/logs/{log}
+     * name : admin.import.logs.destroy
      */
     public function destroyLog(ExcelImportLog $log)
     {
         DB::beginTransaction();
 
         try {
-            // Hapus data yang dibuat dari import ini
+            // Ambil daftar ID yg dibuat dari import ini
             $ids = json_decode($log->created_ids ?? '[]', true);
 
-            if ($log->type === 'books') {
-                Book::whereIn('id', $ids)->delete();
-            } elseif ($log->type === 'members') {
-                Member::whereIn('id', $ids)->delete();
+            if (!is_array($ids)) {
+                $ids = [];
             }
 
-            // Hapus file excel yang tersimpan
+            // Hapus data yang dibuat dari batch import ini
+            if ($log->type === 'books') {
+                if (count($ids) > 0) {
+                    Book::whereIn('id', $ids)->delete();
+                }
+            } elseif ($log->type === 'members') {
+                if (count($ids) > 0) {
+                    Member::whereIn('id', $ids)->delete();
+                }
+            }
+
+            // Hapus file excel arsip
             if ($log->file_path && Storage::disk('public')->exists($log->file_path)) {
                 Storage::disk('public')->delete($log->file_path);
             }
 
+            // Hapus lognya
             $log->delete();
 
             DB::commit();
 
-            return back()->with('success', 'Batch import & data terkait berhasil dihapus.');
+            return back()->with('success', 'Batch import berhasil dihapus (data + file + log).');
         } catch (\Throwable $e) {
             DB::rollBack();
-
-            return back()->with('error', 'Gagal menghapus batch: ' . $e->getMessage());
+            return back()->with('error', 'Gagal hapus batch import: ' . $e->getMessage());
         }
     }
 }

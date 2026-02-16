@@ -5,7 +5,6 @@
 
 @section('content')
 @php
-    // biar gampang pakai Carbon::parse()
     use Carbon\Carbon;
 @endphp
 
@@ -22,7 +21,6 @@
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    /* HERO CARD */
     .status-hero {
         border-radius: 22px;
         padding: 20px 26px;
@@ -84,7 +82,6 @@
         color: #fff;
     }
 
-    /* KARTU UTAMA */
     .status-card {
         border-radius: 20px;
         background: #ffffff;
@@ -122,7 +119,6 @@
         color: #6b7280;
     }
 
-    /* FORM NIS */
     .status-form-row {
         display: flex;
         flex-wrap: wrap;
@@ -166,7 +162,6 @@
         margin-bottom: 12px;
     }
 
-    /* TABEL */
     .status-table-wrapper {
         border-radius: 16px;
         overflow: hidden;
@@ -189,12 +184,14 @@
         font-weight: 600;
         color: #4b5563;
         border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
     }
 
     .status-table tbody td {
         padding: .55rem .9rem;
         border-bottom: 1px solid #f3f4f6;
         background: #ffffff;
+        vertical-align: top;
     }
 
     .status-table tbody tr:nth-child(even) td {
@@ -220,9 +217,19 @@
         color: #166534;
     }
 
+    .pill-pending {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
     .pill-returned {
         background: #e5e7eb;
         color: #374151;
+    }
+
+    .pill-late {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .pill-dot {
@@ -237,6 +244,33 @@
         color: #6b7280;
     }
 
+    .btn-extend {
+        border: none;
+        border-radius: 999px;
+        padding: .38rem .85rem;
+        font-weight: 700;
+        font-size: .8rem;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #111827;
+        cursor: pointer;
+        box-shadow: 0 10px 22px rgba(245,158,11,.25);
+        white-space: nowrap;
+    }
+    .btn-extend:hover { filter: brightness(1.05); }
+
+    .btn-extend:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        filter: none;
+        box-shadow: none;
+    }
+
+    .extend-muted {
+        font-size: .78rem;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
     @media (max-width: 768px) {
         .status-hero {
             flex-direction: column;
@@ -247,12 +281,9 @@
 
 <div class="status-wrapper">
 
-    {{-- HERO --}}
     <div class="status-hero">
         <div class="status-hero-left">
-            <div class="status-hero-icon">
-                📚
-            </div>
+            <div class="status-hero-icon">📚</div>
             <div>
                 <div class="status-hero-title">Cek Status Peminjaman</div>
                 <div class="status-hero-sub">
@@ -268,7 +299,6 @@
         </div>
     </div>
 
-    {{-- KARTU UTAMA --}}
     <div class="status-card">
         <div class="status-card-header">
             <div class="status-card-title">
@@ -280,7 +310,17 @@
             @endif
         </div>
 
-        {{-- FORM NIS --}}
+        {{-- ✅ ALERT + AUTOHIDE --}}
+        @if (session('success'))
+            <div id="flash-message" class="alert alert-success py-2 mb-2">
+                {{ session('success') }}
+            </div>
+        @elseif (session('error'))
+            <div id="flash-message" class="alert alert-danger py-2 mb-2">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <form method="GET" action="{{ route('student.borrow.status') }}">
             <div class="status-form-row">
                 <input
@@ -290,9 +330,7 @@
                     placeholder="Masukkan NIS siswa"
                     value="{{ old('nis', $nis ?? '') }}"
                 >
-                <button type="submit" class="status-btn-submit">
-                    Cek Status
-                </button>
+                <button type="submit" class="status-btn-submit">Cek Status</button>
             </div>
         </form>
 
@@ -300,7 +338,6 @@
             Tekan Enter setelah mengetik NIS, atau klik tombol <strong>Cek Status</strong>.
         </div>
 
-        {{-- TABEL / HASIL --}}
         @if(isset($borrowings) && $borrowings->count())
             <div class="status-table-wrapper mt-2">
                 <table class="status-table">
@@ -312,33 +349,62 @@
                             <th style="width:170px;">Jatuh Tempo</th>
                             <th style="width:170px;">Tanggal Kembali</th>
                             <th style="width:130px;">Status</th>
+                            <th style="width:170px;">Kadaluarsa</th>
+                            <th style="width:200px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($borrowings as $index => $borrow)
+                            @php
+                                $status = $borrow->status ?? 'Diajukan';
+                                $isDiajukan = $status === 'Diajukan';
+                                $isDipinjam = $status === 'Dipinjam';
+                                $isKembali  = $status === 'Kembali';
+                                $isLate     = $status === 'Terlambat';
+
+                                // ✅ Ambil dari semua kemungkinan kolom
+                                $rawExpire = $borrow->expired_at
+                                    ?? $borrow->expires_at
+                                    ?? $borrow->expire_at
+                                    ?? null;
+
+                                // ✅ Fallback: kalau null semua, minimal created_at + 2 hari
+                                if (!$rawExpire && $borrow->created_at) {
+                                    $rawExpire = Carbon::parse($borrow->created_at)->addDays(2);
+                                }
+
+                                $expiresAt = $rawExpire ? Carbon::parse($rawExpire) : null;
+                                $isExpired = $expiresAt ? $expiresAt->isPast() : false;
+
+                                $extendCount = (int) ($borrow->extend_count ?? 0);
+                                $maxExtend   = 2;
+
+                                $canExtend = $isDiajukan && !$isExpired && $extendCount < $maxExtend;
+
+                                $disableReason = '';
+                                if ($isExpired) $disableReason = 'Pengajuan sudah kadaluarsa';
+                                elseif ($extendCount >= $maxExtend) $disableReason = 'Batas perpanjang sudah maksimal';
+                            @endphp
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $borrow->book->title ?? '-' }}</td>
 
-                                {{-- Tgl Pinjam --}}
                                 <td>
-                                    @if($borrow->borrow_date)
+                                    @if(!$isDiajukan && $borrow->borrow_date)
                                         {{ Carbon::parse($borrow->borrow_date)->translatedFormat('d F Y') }}
                                     @else
                                         -
                                     @endif
                                 </td>
 
-                                {{-- Jatuh Tempo --}}
                                 <td>
-                                    @if($borrow->due_date)
+                                    @if(!$isDiajukan && $borrow->due_date)
                                         {{ Carbon::parse($borrow->due_date)->translatedFormat('d F Y') }}
                                     @else
                                         -
                                     @endif
                                 </td>
 
-                                {{-- Tanggal Kembali --}}
                                 <td>
                                     @if($borrow->return_date)
                                         {{ Carbon::parse($borrow->return_date)->translatedFormat('d F Y') }}
@@ -347,18 +413,72 @@
                                     @endif
                                 </td>
 
-                                {{-- Status --}}
                                 <td>
-                                    @if(is_null($borrow->return_date))
+                                    @if($isDiajukan)
+                                        <span class="status-pill pill-pending">
+                                            <span class="pill-dot"></span>
+                                            Diajukan
+                                        </span>
+                                    @elseif($isDipinjam)
                                         <span class="status-pill pill-active">
                                             <span class="pill-dot"></span>
                                             Dipinjam
+                                        </span>
+                                    @elseif($isLate)
+                                        <span class="status-pill pill-late">
+                                            <span class="pill-dot"></span>
+                                            Terlambat
                                         </span>
                                     @else
                                         <span class="status-pill pill-returned">
                                             <span class="pill-dot"></span>
                                             Dikembalikan
                                         </span>
+                                    @endif
+                                </td>
+
+                                {{-- ✅ Kadaluarsa --}}
+                                <td>
+                                    @if($isDiajukan)
+                                        @if($expiresAt)
+                                            @if($isExpired)
+                                                <span class="extend-muted">Kadaluarsa</span>
+                                            @else
+                                                {{ $expiresAt->translatedFormat('d F Y') }}
+                                            @endif
+                                        @else
+                                            -
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                {{-- ✅ Tombol selalu tampil saat Diajukan, tapi disabled kalau gak boleh --}}
+                                <td>
+                                    @if($isDiajukan)
+                                        <form method="POST" action="{{ route('student.borrow.extend', $borrow->id) }}">
+                                            @csrf
+                                            <input type="hidden" name="nis" value="{{ $nis }}">
+
+                                            <button
+                                                type="submit"
+                                                class="btn-extend"
+                                                {{ $canExtend ? '' : 'disabled' }}
+                                                title="{{ $canExtend ? 'Perpanjang pengajuan +2 hari (maks 2x)' : $disableReason }}"
+                                                onclick="{{ $canExtend ? "return confirm('Perpanjang pengajuan +2 hari? (maks 2x)')" : 'return false;' }}"
+                                            >
+                                                ⏳ Perpanjang ({{ $extendCount }}/{{ $maxExtend }})
+                                            </button>
+
+                                            @if(!$canExtend)
+                                                <div class="extend-muted" style="margin-top:6px;">
+                                                    {{ $disableReason ?: '-' }}
+                                                </div>
+                                            @endif
+                                        </form>
+                                    @else
+                                        <span class="extend-muted">-</span>
                                     @endif
                                 </td>
                             </tr>
@@ -371,7 +491,23 @@
                 Tidak ditemukan peminjaman untuk NIS <strong>{{ $nis }}</strong>.
             </p>
         @endif
-
     </div>
 </div>
+
+{{-- ✅ Auto-hide flash message 3–5 detik --}}
+<script>
+    (function () {
+        const el = document.getElementById('flash-message');
+        if (!el) return;
+
+        setTimeout(() => {
+            el.style.transition = 'opacity 400ms ease';
+            el.style.opacity = '0';
+
+            setTimeout(() => {
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+            }, 450);
+        }, 4000);
+    })();
+</script>
 @endsection

@@ -15,7 +15,12 @@
                             ->whereDate('due_date', '<', now())
                             ->count();
     $todayVisitors     = Visitor::whereDate('created_at', today())->count();
+
+    // hari ini semua transaksi borrowing (termasuk diajukan)
     $todayBorrowings   = Borrowing::whereDate('created_at', today())->count();
+
+    // ✅ GANTI: Total Pengajuan (status Diajukan)
+    $totalPengajuan    = Borrowing::where('status', 'Diajukan')->count();
 @endphp
 
 <style>
@@ -114,9 +119,13 @@
     /* STATISTIK */
     .stat-row {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0,1fr));
+        grid-template-columns: repeat(5, minmax(0,1fr)); /* ✅ tetap 5 */
         gap: 12px;
         margin-bottom: 22px;
+    }
+
+    @media (max-width: 992px){
+        .stat-row{ grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
     .stat-card {
@@ -153,6 +162,10 @@
         grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
         gap: 18px;
         align-items: flex-start;
+    }
+
+    @media (max-width: 992px){
+        .main-grid{ grid-template-columns: 1fr; }
     }
 
     .card-box {
@@ -272,7 +285,6 @@
         text-align: center;
     }
 
-    /* QR lebih besar dikit */
     .qr-inner img {
         width: 210px;
         height: 210px;
@@ -350,20 +362,30 @@
             <div class="stat-value text-primary">{{ $totalBooks }}</div>
             <div class="stat-note">Total stok semua buku yang diinput admin.</div>
         </div>
+
         <div class="stat-card">
             <div class="stat-label">Peminjaman Aktif</div>
             <div class="stat-value" style="color:#f97316;">{{ $activeBorrowings }}</div>
             <div class="stat-note">Buku yang sedang dipinjam siswa.</div>
         </div>
+
         <div class="stat-card">
             <div class="stat-label">Peminjaman Terlambat</div>
             <div class="stat-value" style="color:#dc2626;">{{ $overdueBorrowings }}</div>
             <div class="stat-note">Perlu dicek untuk pengingat / denda.</div>
         </div>
+
         <div class="stat-card">
             <div class="stat-label">Kunjungan Hari Ini</div>
             <div class="stat-value" style="color:#16a34a;">{{ $todayVisitors }}</div>
             <div class="stat-note">Jumlah tamu yang tercatat hari ini.</div>
+        </div>
+
+        {{-- ✅ GANTI: TOTAL PENGAJUAN (bukan kadaluarsa) --}}
+        <div class="stat-card">
+            <div class="stat-label">Total Pengajuan</div>
+            <div class="stat-value" style="color:#2563eb;">{{ $totalPengajuan }}</div>
+            <div class="stat-note">Jumlah pengajuan yang masih menunggu diproses (status: Diajukan).</div>
         </div>
     </div>
 
@@ -392,13 +414,13 @@
                     </span>
                 </a>
 
-                {{-- Peminjaman --}}
+                {{-- ✅ GANTI TEXT: Pengajuan, Peminjaman & Pengembalian --}}
                 <a href="{{ route('borrowings.index') }}" class="quick-btn quick-borrow">
                     <span class="left">
                         <span class="emoji">🔄</span>
                         <span>
-                            Peminjaman & Pengembalian
-                            <span class="caption-small">Transaksi peminjaman harian.</span>
+                            Pengajuan, Peminjaman & Pengembalian
+                            <span class="caption-small">Kelola pengajuan + transaksi peminjaman harian.</span>
                         </span>
                     </span>
                 </a>
@@ -492,24 +514,27 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="activity-item">
                             <div class="activity-dot" style="background:#3b82f6;"></div>
                             <div>
-                                <div class="activity-title">Peminjaman Buku</div>
+                                <div class="activity-title">Pengajuan / Peminjaman Buku</div>
                                 <div class="activity-text">
-                                    Tercatat <strong>{{ $todayBorrowings }}</strong> transaksi peminjaman hari ini.
+                                    Tercatat <strong>{{ $todayBorrowings }}</strong> aktivitas pengajuan/peminjaman hari ini.
                                 </div>
                             </div>
                         </div>
+
                         <div class="activity-item">
                             <div class="activity-dot" style="background:#f97316;"></div>
                             <div>
                                 <div class="activity-title">Catatan Petugas</div>
                                 <div class="activity-text">
-                                    Gunakan menu peminjaman & rekap kunjungan untuk melihat detail tiap transaksi.
+                                    Gunakan menu pengajuan, peminjaman & pengembalian untuk melihat detail tiap transaksi.
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>

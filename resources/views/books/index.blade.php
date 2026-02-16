@@ -71,6 +71,10 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width: 60px;">No.</th>
+
+                            {{-- ✅ TAMBAHAN: ID BUKU --}}
+                            <th style="width: 120px;">ID Buku</th>
+
                             <th>Cover</th>
                             <th>Judul</th>
                             <th>Pengarang</th>
@@ -86,6 +90,11 @@
                         @forelse ($books as $book)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
+
+                                {{-- ✅ TAMBAHAN: ID BUKU --}}
+                                <td>
+                                    {{ $book->book_code ?? ('BK-' . $book->id) }}
+                                </td>
 
                                 <td>
                                     @if ($book->cover)
@@ -130,7 +139,7 @@
 
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">
+                                <td colspan="10" class="text-center py-4 text-muted">
                                     Belum ada data buku.
                                     <strong>Tambah Buku</strong> untuk mulai menambahkan data.
                                 </td>

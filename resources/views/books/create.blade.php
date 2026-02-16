@@ -71,39 +71,54 @@
     <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
+        {{-- ✅ ID BUKU --}}
+        <div class="mb-3">
+            <label>ID Buku</label>
+            <input
+                type="text"
+                name="book_code"
+                class="form-control"
+                placeholder="Contoh: BK-001"
+                value="{{ old('book_code') }}"
+                required
+            >
+            <small class="text-muted">Gunakan format konsisten (misal: BK-001, BK-002, dst).</small>
+        </div>
+
         {{-- JUDUL --}}
         <div class="mb-3">
             <label>Judul Buku</label>
             <input type="text" name="title" class="form-control"
-                   placeholder="Contoh: Laskar Pelangi" required>
+                   placeholder="Contoh: Laskar Pelangi" value="{{ old('title') }}" required>
         </div>
 
         {{-- PENGARANG --}}
         <div class="mb-3">
             <label>Pengarang</label>
             <input type="text" name="author" class="form-control"
-                   placeholder="Contoh: Andrea Hirata" required>
+                   placeholder="Contoh: Andrea Hirata" value="{{ old('author') }}" required>
         </div>
 
         {{-- PENERBIT --}}
         <div class="mb-3">
             <label>Penerbit</label>
             <input type="text" name="publisher" class="form-control"
-                   placeholder="Nama penerbit" required>
+                   placeholder="Nama penerbit" value="{{ old('publisher') }}" required>
         </div>
 
         {{-- TAHUN TERBIT --}}
         <div class="mb-3">
             <label>Tahun Terbit</label>
             <input type="number" name="year" class="form-control"
-                   placeholder="Contoh: 2020" min="1900" max="{{ date('Y') }}" required>
+                   placeholder="Contoh: 2020" min="1900" max="{{ date('Y') }}"
+                   value="{{ old('year') }}" required>
         </div>
 
         {{-- STOK --}}
         <div class="mb-3">
             <label>Stok Buku</label>
             <input type="number" name="stock" class="form-control"
-                   placeholder="Jumlah buku tersedia" min="0" required>
+                   placeholder="Jumlah buku tersedia" min="0" value="{{ old('stock') }}" required>
         </div>
 
         {{-- COVER BUKU (opsional) --}}
@@ -117,7 +132,7 @@
         <div class="mb-3">
             <label>Deskripsi Buku (opsional)</label>
             <textarea name="description" class="form-control" rows="3"
-                      placeholder="Ringkasan singkat isi buku"></textarea>
+                      placeholder="Ringkasan singkat isi buku">{{ old('description') }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary w-100 mb-2">

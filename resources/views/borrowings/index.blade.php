@@ -15,244 +15,178 @@
         --orange-main: #ef6c00;
     }
 
-    body {
-        background-color: #f3f4f6;
-    }
+    body { background-color: #f3f4f6; }
 
-    /* HEADER HALAMAN */
-    .page-header-borrow {
-        border-radius: 18px;
-        padding: 18px 22px;
-        background: linear-gradient(135deg, #e3f2fd, #ffffff);
-        border: 1px solid var(--blue-soft-2);
-        display: flex;
+    .page-header-borrow{
+        border-radius:18px;padding:18px 22px;
+        background:linear-gradient(135deg,#e3f2fd,#ffffff);
+        border:1px solid var(--blue-soft-2);
+        display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:center;margin-bottom:20px;
+    }
+    .page-header-left{display:flex;align-items:center;gap:14px;}
+    .page-icon{
+        width:50px;height:50px;border-radius:16px;background:var(--blue-main);
+        display:flex;align-items:center;justify-content:center;color:white;font-size:1.6rem;
+        box-shadow:0 14px 30px rgba(30,136,229,.45);
+    }
+    .page-title{font-size:1.4rem;font-weight:700;margin-bottom:4px;color:#0f172a;}
+    .page-subtitle{font-size:.9rem;color:#4b5563;}
+
+    .stat-card-borrow{
+        border-radius:14px;border:1px solid var(--gray-border);
+        background:#fff;box-shadow:0 8px 18px rgba(15,23,42,.04);
+        transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .stat-card-borrow:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(15,23,42,.10);border-color:var(--blue-soft-2);}
+    .stat-label{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#6b7280;}
+    .stat-value{font-size:1.9rem;font-weight:700;}
+    .small-muted{font-size:.8rem;color:#6b7280;}
+
+    .badge-status{
+        border-radius:999px;font-size:.75rem;padding:.28rem .8rem;
+        display:inline-flex;align-items:center;gap:.35rem;
+    }
+    .badge-status span.dot{width:8px;height:8px;border-radius:999px;display:inline-block;}
+    .badge-status.diajukan{background:#fff3e0;color:var(--orange-main);}
+    .badge-status.diajukan span.dot{background:var(--orange-main);}
+    .badge-status.dipinjam{background:#e8f5e9;color:var(--green-main);}
+    .badge-status.dipinjam span.dot{background:var(--green-main);}
+    .badge-status.kembali{background:#e8f5e9;color:#2e7d32;}
+    .badge-status.kembali span.dot{background:var(--green-main);}
+    .badge-status.terlambat{background:#ffebee;color:#c62828;}
+    .badge-status.terlambat span.dot{background:var(--red-main);}
+
+    .btn-pill-sm{border-radius:999px;font-size:.8rem;padding:.3rem .85rem;}
+
+    .tab-menu-card{border-radius:16px;border:1px solid var(--gray-border);box-shadow:0 6px 18px rgba(15,23,42,.05);background:#fff;}
+    .tab-menu-header{
+        border-bottom:1px solid var(--gray-border);
+        padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;
+        background:#f9fafb;border-radius:16px 16px 0 0;
+    }
+    .section-title{font-weight:600;display:flex;align-items:center;gap:.4rem;}
+    .section-title span.emoji{font-size:1.3rem;}
+
+    .table-report thead th{background:#eff6ff;border-bottom:1px solid var(--gray-border);font-size:.84rem;}
+    .table-report tbody tr:hover{background:#f9fafb;}
+
+    .pagination{
+        gap:6px;
+        margin: 10px 0 0;
         flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 14px;
-        align-items: center;
-        margin-bottom: 20px;
     }
-
-    .page-header-left {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-
-    .page-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 16px;
-        background: var(--blue-main);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.6rem;
-        box-shadow: 0 14px 30px rgba(30, 136, 229, 0.45);
-    }
-
-    .page-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #0f172a;
-    }
-
-    .page-subtitle {
-        font-size: .9rem;
-        color: #4b5563;
-    }
-
-    /* STATISTIK */
-    .stat-card-borrow {
-        border-radius: 14px;
-        border: 1px solid var(--gray-border);
-        background: #ffffff;
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-
-    .stat-card-borrow:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.10);
-        border-color: var(--blue-soft-2);
-    }
-
-    .stat-label {
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        font-weight: 600;
-        color: #6b7280;
-    }
-
-    .stat-value {
-        font-size: 1.9rem;
-        font-weight: 700;
-    }
-
-    .small-muted {
-        font-size: .8rem;
-        color: #6b7280;
-    }
-
-    /* BADGE STATUS */
-    .badge-status {
-        border-radius: 999px;
-        font-size: .75rem;
-        padding: .28rem .8rem;
+    .pagination .page-item .page-link{
+        border-radius: 12px !important;
+        padding: 6px 10px !important;
+        font-size: .85rem !important;
+        line-height: 1 !important;
+        border: 1px solid #e5e7eb !important;
+        color: #0f172a !important;
+        background: #fff !important;
+        box-shadow: 0 6px 16px rgba(15,23,42,.06);
+        min-width: 38px;
         display: inline-flex;
         align-items: center;
-        gap: .35rem;
+        justify-content: center;
+    }
+    .pagination .page-item.active .page-link{
+        background: linear-gradient(135deg, #2563eb, #4f46e5) !important;
+        border-color: transparent !important;
+        color: #fff !important;
+        box-shadow: 0 10px 22px rgba(37,99,235,.35);
+    }
+    .pagination .page-item.disabled .page-link{
+        opacity: .55;
+        box-shadow: none;
+    }
+    .pagination .page-link:hover{
+        background: #f3f4f6 !important;
+        border-color: #d1d5db !important;
     }
 
-    .badge-status span.dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        display: inline-block;
-    }
+    /* ✅ PRINT ONLY (tidak ngubah tampilan normal) */
+    @media print {
+        .page-header-borrow,
+        .row.g-3.mb-4,
+        .tab-menu-header,
+        #borrowTab,
+        .btn,
+        .pagination,
+        .small-muted { display: none !important; }
 
-    .badge-status.pinjam {
-        background: #fff3e0;
-        color: #ef6c00;
-    }
-    .badge-status.pinjam span.dot {
-        background: var(--orange-main);
-    }
+        .tab-pane { display: none !important; }
+        .tab-pane.active { display: block !important; }
 
-    .badge-status.kembali {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .badge-status.kembali span.dot {
-        background: var(--green-main);
-    }
-
-    .badge-status.terlambat {
-        background: #ffebee;
-        color: #c62828;
-    }
-    .badge-status.terlambat span.dot {
-        background: var(--red-main);
-    }
-
-    /* BUTTON KECIL */
-    .btn-pill-sm {
-        border-radius: 999px;
-        font-size: .8rem;
-        padding: .3rem .85rem;
-    }
-
-    /* MENU TAB */
-    .tab-menu-card {
-        border-radius: 16px;
-        border: 1px solid var(--gray-border);
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
-        background: #ffffff;
-    }
-
-    .tab-menu-header {
-        border-bottom: 1px solid var(--gray-border);
-        padding: 12px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        background: #f9fafb;
-        border-radius: 16px 16px 0 0;
-    }
-
-    .section-title {
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: .4rem;
-    }
-
-    .section-title span.emoji {
-        font-size: 1.3rem;
-    }
-
-    .table-report thead th {
-        background: #eff6ff;
-        border-bottom: 1px solid var(--gray-border);
-        font-size: .84rem;
-    }
-
-    .table-report tbody tr:hover {
-        background: #f9fafb;
+        body { background: #fff !important; }
     }
 </style>
 
 @php
     use App\Models\Borrowing;
 
-    // status di DB: 'Dipinjam', 'Kembali', 'Terlambat'
-    $totalBorrow    = Borrowing::count();
-    $activeBorrow   = Borrowing::where('status', 'Dipinjam')->count();
-    $returnedBorrow = Borrowing::where('status', 'Kembali')->count();
+    // statistik ambil dari DB biar akurat
+    $totalBorrow    = Borrowing::whereIn('status', ['Dipinjam', 'Kembali', 'Terlambat'])->count();
+    $countDiajukan  = Borrowing::where('status', 'Diajukan')->count();
+
+    // ✅ FIX: aktif harus Dipinjam + Terlambat
+    $activeBorrow   = Borrowing::whereIn('status', ['Dipinjam','Terlambat'])->count();
+
+    // ✅ FIX: overdue aman kalau due_date null
     $overdueBorrow  = Borrowing::where('status', 'Dipinjam')
-                        ->whereDate('due_date', '<', now())
+                        ->whereNotNull('due_date')
+                        ->whereDate('due_date', '<', today())
                         ->count();
 @endphp
 
 <div class="container py-4">
 
-    {{-- HEADER HALAMAN --}}
     <div class="page-header-borrow">
         <div class="page-header-left">
-            <div class="page-icon">
-                📘
-            </div>
+            <div class="page-icon">📘</div>
             <div>
                 <div class="page-title">Kelola Peminjaman & Pengembalian</div>
                 <div class="page-subtitle">
-                    Halaman khusus petugas perpustakaan untuk mengelola transaksi peminjaman, pengembalian,
-                    dan data peminjam.
+                    Halaman khusus petugas perpustakaan untuk mengelola pengajuan, peminjaman aktif, dan riwayat pengembalian.
                 </div>
             </div>
         </div>
         <div class="d-flex flex-column flex-md-row gap-2">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                ← Kembali ke Dashboard
-            </a>
-            <a href="{{ route('borrowings.create') }}" class="btn btn-primary btn-sm">
-                + Tambah Peminjaman
-            </a>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">← Kembali ke Dashboard</a>
+            <a href="{{ route('borrowings.create') }}" class="btn btn-primary btn-sm">+ Tambah Peminjaman</a>
         </div>
     </div>
 
-    {{-- STATISTIK RINGKAS --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card stat-card-borrow h-100">
                 <div class="card-body">
-                    <div class="stat-label mb-1">Total Peminjaman</div>
+                    <div class="stat-label mb-1">Total Transaksi</div>
                     <div class="stat-value text-primary mb-1">{{ $totalBorrow }}</div>
-                    <div class="small-muted">Seluruh transaksi peminjaman tercatat di sistem.</div>
+                    <div class="small-muted">Transaksi yang sudah diproses (Dipinjam / Kembali / Terlambat).</div>
                 </div>
             </div>
         </div>
+
         <div class="col-md-3">
             <div class="card stat-card-borrow h-100">
                 <div class="card-body">
-                    <div class="stat-label mb-1">Aktif</div>
-                    <div class="stat-value mb-1" style="color: var(--orange-main);">{{ $activeBorrow }}</div>
+                    <div class="stat-label mb-1">Pengajuan</div>
+                    <div class="stat-value mb-1" style="color: var(--orange-main);">{{ $countDiajukan }}</div>
+                    <div class="small-muted">Pengajuan menunggu diproses admin.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card-borrow h-100">
+                <div class="card-body">
+                    <div class="stat-label mb-1">Dipinjam (Aktif)</div>
+                    <div class="stat-value mb-1" style="color: var(--green-main);">{{ $activeBorrow }}</div>
                     <div class="small-muted">Buku yang saat ini masih dipinjam siswa.</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card-borrow h-100">
-                <div class="card-body">
-                    <div class="stat-label mb-1">Sudah Kembali</div>
-                    <div class="stat-value mb-1" style="color: var(--green-main);">{{ $returnedBorrow }}</div>
-                    <div class="small-muted">Transaksi peminjaman yang sudah selesai.</div>
-                </div>
-            </div>
-        </div>
+
         <div class="col-md-3">
             <div class="card stat-card-borrow h-100">
                 <div class="card-body">
@@ -264,50 +198,37 @@
         </div>
     </div>
 
-    {{-- MENU TAB: LAPORAN vs DETAIL --}}
     <div class="tab-menu-card">
         <div class="tab-menu-header">
             <div>
                 <div class="section-title mb-0">
                     <span class="emoji">📂</span>
-                    <span>Menu Tampilan Data Peminjaman</span>
+                    <span>Menu Tampilan Data</span>
                 </div>
                 <div class="small-muted">
-                    Pilih tampilan yang diinginkan: laporan data peminjam (siap cetak) atau detail peminjaman buku.
+                    Pengajuan (butuh aksi), Peminjaman aktif, dan Riwayat (untuk laporan/cetak).
                 </div>
             </div>
             <div class="d-none d-md-block small-muted">
-                Klik salah satu tab di sebelah bawah untuk mengganti kategori.
+                Klik salah satu tab di bawah untuk mengganti kategori.
             </div>
         </div>
 
         <div class="px-3 pt-2">
-            {{-- NAV TAB --}}
             <ul class="nav nav-pills mb-3 mt-1" id="borrowTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button
-                        class="nav-link active"
-                        id="laporan-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#laporan"
-                        type="button"
-                        role="tab"
-                        aria-controls="laporan"
-                        aria-selected="true">
-                        📄 Laporan Data Peminjam
+                    <button class="nav-link active" id="pengajuan-tab" data-bs-toggle="tab" data-bs-target="#pengajuan" type="button" role="tab">
+                        🟠 Pengajuan
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button
-                        class="nav-link"
-                        id="detail-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#detail"
-                        type="button"
-                        role="tab"
-                        aria-controls="detail"
-                        aria-selected="false">
-                        📚 Detail Peminjaman Buku
+                    <button class="nav-link" id="aktif-tab" data-bs-toggle="tab" data-bs-target="#aktif" type="button" role="tab">
+                        ✅ Peminjaman Aktif
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="riwayat-tab" data-bs-toggle="tab" data-bs-target="#riwayat" type="button" role="tab">
+                        📄 Riwayat (Kembali)
                     </button>
                 </li>
             </ul>
@@ -315,224 +236,270 @@
 
         <div class="tab-content pb-3 px-2">
 
-            {{-- TAB 1: LAPORAN DATA PEMINJAM --}}
-            <div class="tab-pane fade show active" id="laporan" role="tabpanel" aria-labelledby="laporan-tab">
+            {{-- TAB 1: PENGAJUAN --}}
+            <div class="tab-pane fade show active" id="pengajuan" role="tabpanel">
+                <div class="px-2 pb-3">
+                    <div class="small-muted mb-2">Daftar pengajuan menunggu diproses (setujui/tolak).</div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:70px;">No</th>
+                                    <th style="width:130px;">ID Buku</th>
+                                    <th>Anggota / Siswa</th>
+                                    <th>Judul Buku</th>
+                                    <th style="width:170px;">Kadaluarsa</th>
+                                    <th style="width:140px;">Status</th>
+                                    <th style="width:260px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($pengajuan as $borrowing)
+                                    @php
+                                        $nama  = $borrowing->student_name ?? optional($borrowing->member)->name;
+                                        $nis   = $borrowing->student_nis ?? optional($borrowing->member)->nis;
+                                        $kelas = $borrowing->student_class ?? optional($borrowing->member)->class;
+                                        $bookCode = optional($borrowing->book)->book_code ?? '-';
+
+                                        // ✅ FIX: expired_at fallback ke created_at + 2 hari
+                                        $exp = $borrowing->expired_at
+                                            ? \Carbon\Carbon::parse($borrowing->expired_at)
+                                            : \Carbon\Carbon::parse($borrowing->created_at)->addDays(2);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $bookCode }}</td>
+                                        <td>
+                                            {{ $nama ?? '—' }}
+                                            <div class="small-muted">NIS: {{ $nis ?? '-' }} | Kelas: {{ $kelas ?? '-' }}</div>
+                                        </td>
+                                        <td>
+                                            {{ optional($borrowing->book)->title ?? '—' }}
+                                            <div class="small-muted">{{ optional($borrowing->book)->author ?? '' }}</div>
+                                        </td>
+                                        <td>
+                                            {{ $exp->timezone(config('app.timezone'))->locale('id')->translatedFormat('d F Y H:i') }}
+                                        </td>
+                                        <td>
+                                            <span class="badge-status diajukan"><span class="dot"></span> Diajukan</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <a href="{{ route('borrowings.edit', $borrowing->id) }}" class="btn btn-success btn-pill-sm">
+                                                    Setujui / Proses
+                                                </a>
+
+                                                <form action="{{ route('borrowings.destroy', $borrowing->id) }}" method="POST"
+                                                      onsubmit="return confirm('Tolak pengajuan ini? Data akan dihapus.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-outline-danger btn-pill-sm">Tolak</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Belum ada pengajuan.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-2">
+                        {{ $pengajuan->withQueryString()->links() }}
+                    </div>
+                </div>
+            </div>
+
+            {{-- TAB 2: PEMINJAMAN AKTIF --}}
+            <div class="tab-pane fade" id="aktif" role="tabpanel">
+                <div class="px-2 pb-3">
+                    <div class="small-muted mb-2">Buku yang sedang dipinjam / terlambat. Fokus untuk “tandai kembali”.</div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:70px;">No</th>
+                                    <th style="width:130px;">ID Buku</th>
+                                    <th style="width:170px;">Tanggal Pinjam</th>
+                                    <th>Anggota / Siswa</th>
+                                    <th>Judul Buku</th>
+                                    <th style="width:170px;">Jatuh Tempo</th>
+                                    <th style="width:140px;">Status</th>
+                                    <th style="width:220px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($aktif as $borrowing)
+                                    @php
+                                        $nama  = $borrowing->student_name ?? optional($borrowing->member)->name;
+                                        $nis   = $borrowing->student_nis ?? optional($borrowing->member)->nis;
+                                        $kelas = $borrowing->student_class ?? optional($borrowing->member)->class;
+
+                                        $isOverdue = $borrowing->status === 'Dipinjam'
+                                            && $borrowing->due_date
+                                            && $borrowing->due_date < now()->toDateString();
+
+                                        $bookCode = optional($borrowing->book)->book_code ?? '-';
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $bookCode }}</td>
+                                        <td>
+                                            @if($borrowing->borrow_date)
+                                                {{ \Carbon\Carbon::parse($borrowing->borrow_date)->locale('id')->translatedFormat('d F Y') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            {{ $nama ?? '—' }}
+                                            <div class="small-muted">NIS: {{ $nis ?? '-' }} | Kelas: {{ $kelas ?? '-' }}</div>
+                                        </td>
+                                        <td>
+                                            {{ optional($borrowing->book)->title ?? '—' }}
+                                            <div class="small-muted">{{ optional($borrowing->book)->author ?? '' }}</div>
+                                        </td>
+                                        <td>
+                                            @if($borrowing->due_date)
+                                                {{ \Carbon\Carbon::parse($borrowing->due_date)->locale('id')->translatedFormat('d F Y') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($borrowing->status === 'Terlambat' || $isOverdue)
+                                                <span class="badge-status terlambat"><span class="dot"></span> Terlambat</span>
+                                            @else
+                                                <span class="badge-status dipinjam"><span class="dot"></span> Dipinjam</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <a href="{{ route('borrowings.edit', $borrowing->id) }}" class="btn btn-success btn-pill-sm">
+                                                    Tandai Kembali
+                                                </a>
+                                                <a href="{{ route('borrowings.edit', $borrowing->id) }}" class="btn btn-outline-secondary btn-pill-sm">
+                                                    Ubah
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="8" class="text-center text-muted py-4">Belum ada peminjaman aktif.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-2">
+                        {{ $aktif->withQueryString()->links() }}
+                    </div>
+                </div>
+            </div>
+
+            {{-- TAB 3: RIWAYAT --}}
+            <div class="tab-pane fade" id="riwayat" role="tabpanel">
                 <div class="px-2 pb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="small-muted">
-                            Tabel ringkas berisi identitas peminjam untuk keperluan laporan dan rekap.
-                        </div>
-                        <button type="button"
-                                class="btn btn-outline-primary btn-sm"
-                                onclick="window.print()">
-                            🖨 Cetak Laporan
-                        </button>
+                        <div class="small-muted">Riwayat pengembalian untuk laporan/cetak.</div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">🖨 Cetak Laporan</button>
                     </div>
 
                     <div class="table-responsive">
                         <table class="table table-report align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Tanggal Pinjam</th>
+                                    <th style="width:70px;">No</th>
+                                    <th style="width:130px;">ID Buku</th>
+                                    <th style="width:170px;">Tanggal Pinjam</th>
+                                    <th style="width:170px;">Tanggal Kembali</th>
                                     <th>Nama Peminjam</th>
-                                    <th>NIS</th>
-                                    <th>Kelas</th>
-                                    <th>Status</th>
+                                    <th style="width:130px;">NIS</th>
+                                    <th style="width:90px;">Kelas</th>
+                                    <th style="width:140px;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($borrowings as $borrowing)
+                                @forelse($riwayat as $borrowing)
                                     @php
-                                        // ambil data siswa: dari kolom manual, kalau kosong fallback ke relasi member
-                                        $nama  = $borrowing->student_name  ?? optional($borrowing->member)->name;
-                                        $nis   = $borrowing->student_nis   ?? optional($borrowing->member)->nis;
+                                        $nama  = $borrowing->student_name ?? optional($borrowing->member)->name;
+                                        $nis   = $borrowing->student_nis ?? optional($borrowing->member)->nis;
                                         $kelas = $borrowing->student_class ?? optional($borrowing->member)->class;
-
-                                        $isOverdue = $borrowing->status === 'Dipinjam'
-                                            && $borrowing->due_date
-                                            && $borrowing->due_date < now()->toDateString();
+                                        $bookCode = optional($borrowing->book)->book_code ?? '-';
                                     @endphp
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        {{-- 12 Desember 2025 --}}
-                                        <td>{{ \Carbon\Carbon::parse($borrowing->borrow_date)->locale('id')->translatedFormat('d F Y') }}</td>
-                                        <td>{{ $nama ?? '—' }}</td>
-                                        <td>{{ $nis ?? '-' }}</td>
-                                        <td>{{ $kelas ?? '-' }}</td>
+                                        <td>{{ $bookCode }}</td>
                                         <td>
-                                            @if($borrowing->status === 'Dipinjam')
-                                                @if($isOverdue)
-                                                    <span class="badge-status terlambat">
-                                                        <span class="dot"></span> Dipinjam • Terlambat
-                                                    </span>
-                                                @else
-                                                    <span class="badge-status pinjam">
-                                                        <span class="dot"></span> Dipinjam
-                                                    </span>
-                                                @endif
-                                            @elseif($borrowing->status === 'Terlambat')
-                                                <span class="badge-status terlambat">
-                                                    <span class="dot"></span> Terlambat
-                                                </span>
-                                            @else
-                                                <span class="badge-status kembali">
-                                                    <span class="dot"></span> Kembali
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted py-3">
-                                            Belum ada data peminjaman yang tercatat.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    @if(method_exists($borrowings, 'links'))
-                        <div class="mt-2">
-                            {{ $borrowings->links() }}
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            {{-- TAB 2: DETAIL PEMINJAMAN BUKU --}}
-            <div class="tab-pane fade" id="detail" role="tabpanel" aria-labelledby="detail-tab">
-                <div class="px-2 pb-3">
-                    <div class="small-muted mb-2">
-                        Tampilan lengkap untuk mengelola peminjaman harian: judul buku, jatuh tempo, dan aksi pengembalian.
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal Pinjam</th>
-                                    <th>Anggota / Siswa</th>
-                                    <th>Judul Buku</th>
-                                    <th>Jatuh Tempo</th>
-                                    <th>Status</th>
-                                    <th style="width:230px;">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($borrowings as $borrowing)
-                                    @php
-                                        $nama  = $borrowing->student_name  ?? optional($borrowing->member)->name;
-                                        $nis   = $borrowing->student_nis   ?? optional($borrowing->member)->nis;
-                                        $kelas = $borrowing->student_class ?? optional($borrowing->member)->class;
-
-                                        $isOverdue = $borrowing->status === 'Dipinjam'
-                                            && $borrowing->due_date
-                                            && $borrowing->due_date < now()->toDateString();
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-
-                                        {{-- Tanggal pinjam: 12 Desember 2025 --}}
-                                        <td>{{ \Carbon\Carbon::parse($borrowing->borrow_date)->locale('id')->translatedFormat('d F Y') }}</td>
-
-                                        <td>
-                                            {{ $nama ?? '—' }}
-                                            <div class="small-muted">
-                                                NIS: {{ $nis ?? '-' }} | Kelas: {{ $kelas ?? '-' }}
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            {{ optional($borrowing->book)->title ?? '—' }}
-                                            <div class="small-muted">
-                                                {{ optional($borrowing->book)->author ?? '' }}
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            @if($borrowing->due_date)
-                                                {{-- Jatuh tempo: 12 Desember 2025 --}}
-                                                {{ \Carbon\Carbon::parse($borrowing->due_date)->locale('id')->translatedFormat('d F Y') }}
+                                            @if($borrowing->borrow_date)
+                                                {{ \Carbon\Carbon::parse($borrowing->borrow_date)->locale('id')->translatedFormat('d F Y') }}
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-
                                         <td>
-                                            @if($borrowing->status === 'Dipinjam')
-                                                @if($isOverdue)
-                                                    <span class="badge-status terlambat">
-                                                        <span class="dot"></span> Dipinjam • Terlambat
-                                                    </span>
-                                                @else
-                                                    <span class="badge-status pinjam">
-                                                        <span class="dot"></span> Dipinjam
-                                                    </span>
-                                                @endif
-                                            @elseif($borrowing->status === 'Terlambat')
-                                                <span class="badge-status terlambat">
-                                                    <span class="dot"></span> Terlambat
-                                                </span>
+                                            @if($borrowing->return_date)
+                                                {{ \Carbon\Carbon::parse($borrowing->return_date)->locale('id')->translatedFormat('d F Y') }}
                                             @else
-                                                <span class="badge-status kembali">
-                                                    <span class="dot"></span> Kembali
-                                                </span>
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
-
+                                        <td>{{ $nama ?? '—' }}</td>
+                                        <td>{{ $nis ?? '-' }}</td>
+                                        <td>{{ $kelas ?? '-' }}</td>
                                         <td>
-                                            <div class="d-flex flex-wrap gap-1">
-                                                {{-- Ubah --}}
-                                                <a href="{{ route('borrowings.edit', $borrowing->id) }}"
-                                                   class="btn btn-outline-secondary btn-pill-sm">
-                                                    Ubah
-                                                </a>
-
-                                                {{-- Tandai Kembali --}}
-                                                @if($borrowing->status === 'Dipinjam')
-                                                    <a href="{{ route('borrowings.edit', $borrowing->id) }}"
-                                                       class="btn btn-success btn-pill-sm">
-                                                        Tandai Kembali
-                                                    </a>
-                                                @endif
-
-                                                {{-- Hapus --}}
-                                                <form action="{{ route('borrowings.destroy', $borrowing->id) }}"
-                                                      method="POST"
-                                                      onsubmit="return confirm('Yakin ingin menghapus data peminjaman ini?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-outline-danger btn-pill-sm">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            <span class="badge-status kembali"><span class="dot"></span> Kembali</span>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted py-4">
-                                            Belum ada data peminjaman yang tercatat.
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="8" class="text-center text-muted py-3">Belum ada riwayat pengembalian.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    @if(method_exists($borrowings, 'links'))
-                        <div class="mt-2">
-                            {{ $borrowings->links() }}
-                        </div>
-                    @endif
+                    <div class="mt-2">
+                        {{ $riwayat->withQueryString()->links() }}
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
-
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function activateTabFromHash() {
+        const hash = window.location.hash;
+        if (!hash) return;
+        const tabBtn = document.querySelector(`[data-bs-target="${hash}"]`);
+        if (tabBtn) {
+            const tab = new bootstrap.Tab(tabBtn);
+            tab.show();
+        }
+    }
+
+    document.querySelectorAll('#borrowTab button[data-bs-toggle="tab"]').forEach(btn => {
+        btn.addEventListener('shown.bs.tab', function (e) {
+            const target = e.target.getAttribute('data-bs-target');
+            if (target) window.location.hash = target;
+        });
+    });
+
+    function patchPaginationLinks() {
+        const hash = window.location.hash || '#pengajuan';
+        document.querySelectorAll('.pagination a.page-link').forEach(a => {
+            const url = new URL(a.href);
+            a.href = url.toString().split('#')[0] + hash;
+        });
+    }
+
+    activateTabFromHash();
+    patchPaginationLinks();
+});
+</script>
 @endsection

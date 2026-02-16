@@ -94,25 +94,12 @@
         border-bottom: none;
     }
 
-    .catalog-table thead th:first-child {
-        border-top-left-radius: 10px;
-    }
+    .catalog-table thead th:first-child { border-top-left-radius: 10px; }
+    .catalog-table thead th:last-child { border-top-right-radius: 10px; }
 
-    .catalog-table thead th:last-child {
-        border-top-right-radius: 10px;
-    }
-
-    .catalog-table tbody tr:nth-child(even) {
-        background: #f9fafb;
-    }
-
-    .catalog-table tbody tr:hover {
-        background: #eef2ff;
-    }
-
-    .catalog-table tbody td {
-        font-size: .86rem;
-    }
+    .catalog-table tbody tr:nth-child(even) { background: #f9fafb; }
+    .catalog-table tbody tr:hover { background: #eef2ff; }
+    .catalog-table tbody td { font-size: .86rem; }
 
     .badge-status {
         display: inline-flex;
@@ -123,15 +110,8 @@
         font-weight: 600;
     }
 
-    .badge-success {
-        background: #16a34a;
-        color: #ecfdf5;
-    }
-
-    .badge-danger {
-        background: #b91c1c;
-        color: #fee2e2;
-    }
+    .badge-success { background: #16a34a; color: #ecfdf5; }
+    .badge-danger  { background: #b91c1c; color: #fee2e2; }
 
     .stock-pill {
         display: inline-flex;
@@ -147,17 +127,8 @@
         color: #111827;
     }
 
-    .stock-available {
-        background: #ecfdf5;
-        border-color: #16a34a;
-        color: #166534;
-    }
-
-    .stock-empty {
-        background: #fef2f2;
-        border-color: #fca5a5;
-        color: #b91c1c;
-    }
+    .stock-available { background: #ecfdf5; border-color: #16a34a; color: #166534; }
+    .stock-empty     { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
 
     .book-cover-thumb {
         width: 54px;
@@ -167,222 +138,265 @@
         box-shadow: 0 4px 14px rgba(15, 23, 42, 0.4);
     }
 
-    .book-title-cell {
-        font-weight: 600;
-    }
-
-    .book-desc {
-        font-size: .78rem;
-        color: #6b7280;
-        margin-top: 2px;
-    }
+    .book-title-cell { font-weight: 600; }
+    .book-desc { font-size: .78rem; color: #6b7280; margin-top: 2px; }
 
     .catalog-footer-link a {
         font-size: .85rem;
         color: #2563eb;
         text-decoration: none;
     }
+    .catalog-footer-link a:hover { text-decoration: underline; }
 
-    .catalog-footer-link a:hover {
-        text-decoration: underline;
-    }
-
-    /* MODAL “NEON” */
-    .modal-neon .modal-dialog {
-        max-width: 720px;
-    }
-
-    .modal-neon .modal-content {
-        border-radius: 20px;
-        border: 1px solid rgba(56, 189, 248, 0.8);
-        background: radial-gradient(circle at top left, #0f172a 0, #020617 55%);
-        box-shadow:
-            0 0 25px rgba(56, 189, 248, 0.65),
-            0 0 80px rgba(15, 23, 42, 0.95);
+    /* ===========================
+       MODAL – MODERN GLASS (NEW)
+       =========================== */
+    .modal-modern .modal-dialog { max-width: 820px; }
+    .modal-modern .modal-content {
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: radial-gradient(circle at top left, rgba(56,189,248,.18), transparent 55%),
+                    radial-gradient(circle at bottom right, rgba(34,197,94,.12), transparent 50%),
+                    rgba(2, 6, 23, .92);
         color: #e5e7eb;
         overflow: hidden;
-        padding: 0;
+        box-shadow: 0 30px 100px rgba(2,6,23,.85);
+        backdrop-filter: blur(10px);
     }
 
-    .modal-neon .modal-header,
-    .modal-neon .modal-footer {
-        border: none;
+    .modal-modern .modal-header,
+    .modal-modern .modal-footer {
+        border: 0;
         padding: 14px 18px;
     }
 
-    .modal-neon .modal-body {
-        padding: 0 18px 16px;
+    .modal-modern .modal-header {
+        padding: 16px 18px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
     }
 
-    .neon-layout {
+    .modal-modern-title {
+        display:flex; align-items:center; gap:10px;
+        font-weight:700;
+        letter-spacing:.02em;
+        margin:0;
+        font-size:1rem;
+        color:#f8fafc;
+    }
+
+    .modal-modern-badge {
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:6px 10px;
+        border-radius:999px;
+        border:1px solid rgba(148,163,184,.25);
+        background: rgba(15,23,42,.7);
+        font-size:.78rem;
+        color:#cbd5e1;
+        white-space: nowrap;
+    }
+
+    .modal-modern-badge .dot {
+        width: 7px; height: 7px; border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 14px rgba(34,197,94,.85);
+    }
+
+    .modal-body { padding: 0 18px 16px; }
+
+    .modern-layout {
         display: grid;
         grid-template-columns: minmax(0, 2.2fr) minmax(0, 3fr);
-        min-height: 320px;
+        min-height: 360px;
+        border-top: 1px solid rgba(148,163,184,.15);
     }
 
-    .neon-left {
+    .modern-left {
         position: relative;
-        padding: 18px 18px 18px 22px;
+        padding: 18px 18px 18px 20px;
+        border-right: 1px solid rgba(148,163,184,.12);
         background:
-            linear-gradient(135deg, rgba(15, 23, 42, 0.1) 0, rgba(30, 64, 175, 0.85) 35%, #0f172a 70%),
-            radial-gradient(circle at top left, #1d4ed8, transparent 55%);
-        border-right: 1px solid rgba(37, 99, 235, 0.4);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+            radial-gradient(circle at 0 0, rgba(59,130,246,.22), transparent 60%),
+            radial-gradient(circle at 100% 100%, rgba(34,197,94,.10), transparent 55%);
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        gap: 14px;
     }
 
-    .neon-left::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-right: 2px solid rgba(56, 189, 248, 0.8);
-        border-radius: 0 20px 20px 0;
-        opacity: 0.25;
-        pointer-events: none;
-    }
-
-    .neon-welcome {
-        font-size: .85rem;
-        letter-spacing: .2em;
+    .modern-welcome {
+        font-size: .78rem;
+        letter-spacing: .22em;
         text-transform: uppercase;
         color: #93c5fd;
         margin-bottom: 6px;
     }
 
-    .neon-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 10px;
+    .modern-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: #f8fafc;
     }
 
-    .neon-sub {
-        font-size: .82rem;
-        color: #d1d5db;
+    .modern-sub {
+        font-size: .86rem;
+        color: #cbd5e1;
+        opacity: .95;
+        line-height: 1.4;
     }
 
-    .neon-book-info {
-        margin-top: 18px;
-        display: flex;
+    .modern-book {
+        display:flex;
         gap: 12px;
-        align-items: flex-start;
+        align-items:flex-start;
+        margin-top: 6px;
+        padding: 12px 12px;
+        border-radius: 18px;
+        background: rgba(15,23,42,.65);
+        border: 1px solid rgba(148,163,184,.14);
+        box-shadow: 0 14px 40px rgba(2,6,23,.55);
     }
 
-    .neon-book-cover {
-        width: 64px;
-        height: 88px;
-        border-radius: 8px;
+    .modern-cover {
+        width: 72px;
+        height: 98px;
+        border-radius: 14px;
         object-fit: cover;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(191, 219, 254, 0.35);
+        box-shadow: 0 10px 30px rgba(2,6,23,.75);
+        border: 1px solid rgba(148,163,184,.18);
+        background: #0b1220;
+        flex-shrink: 0;
     }
 
-    .neon-book-title {
-        font-weight: 600;
-        font-size: .95rem;
-        margin-bottom: 4px;
+    .modern-book-title { font-weight: 700; font-size: .98rem; margin-bottom: 4px; }
+    .modern-book-desc  { font-size: .8rem; color: #cbd5e1; opacity: .9; }
+    .modern-note {
+        font-size: .76rem;
+        color: #94a3b8;
+        margin-top: 10px;
     }
 
-    .neon-book-desc {
-        font-size: .78rem;
-        color: #e5e7eb;
-        opacity: .9;
+    .modern-right {
+        padding: 18px 18px 16px 16px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        gap: 12px;
     }
 
-    .neon-small-note {
-        font-size: .75rem;
-        color: #9ca3af;
-        margin-top: 12px;
+    .modern-info {
+        display:flex;
+        align-items:flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 16px;
+        background: linear-gradient(90deg, rgba(15,23,42,.75), rgba(37,99,235,.16));
+        border: 1px solid rgba(148,163,184,.14);
+        color: #cbd5e1;
+        font-size: .82rem;
+    }
+    .modern-info .i {
+        width: 26px; height: 26px; border-radius: 10px;
+        display:flex; align-items:center; justify-content:center;
+        background: rgba(56,189,248,.18);
+        border: 1px solid rgba(56,189,248,.22);
+        flex-shrink:0;
     }
 
-    .neon-right {
-        padding: 18px 18px 18px 16px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .borrow-info-box {
-        font-size: .78rem;
-        color: #cbd5f5;
-        background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.5));
-        border-radius: 999px;
-        padding: 7px 12px;
-        margin-bottom: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .borrow-info-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: #22c55e;
-        box-shadow: 0 0 10px rgba(34, 197, 94, 0.85);
-    }
-
-    .modal-neon label.form-label {
-        font-size: .78rem;
+    .modal-modern label.form-label {
+        font-size: .72rem;
         text-transform: uppercase;
-        letter-spacing: .08em;
-        color: #9ca3af;
-        margin-bottom: 4px;
+        letter-spacing: .1em;
+        color: #94a3b8;
+        margin-bottom: 5px;
+        font-weight: 700;
     }
 
-    .modal-neon .form-control,
-    .modal-neon .form-select {
-        background: #020617;
+    .modal-modern .form-control,
+    .modal-modern .form-select {
+        background: rgba(2,6,23,.65);
         border-radius: 999px;
-        border: 1px solid #1f2937;
-        font-size: .85rem;
+        border: 1px solid rgba(148,163,184,.18);
+        font-size: .9rem;
         color: #e5e7eb;
-        padding-inline: 14px;
+        padding: .58rem 1rem;
+        box-shadow: 0 0 0 1px transparent;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
 
-    .modal-neon .form-control:focus,
-    .modal-neon .form-select:focus {
-        border-color: #38bdf8;
-        box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
-        background: #020617;
+    .modal-modern .form-control::placeholder { color: #64748b; }
+
+    .modal-modern .form-control:focus,
+    .modal-modern .form-select:focus {
+        border-color: rgba(56,189,248,.75);
+        box-shadow: 0 0 0 3px rgba(56,189,248,.18);
+        background: rgba(2,6,23,.9);
         color: #e5e7eb;
     }
 
-    .modal-neon .form-control::placeholder {
-        color: #6b7280;
+    .nis-hint {
+        display:flex;
+        align-items:center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: .78rem;
+        color: #94a3b8;
     }
 
-    .modal-neon .btn-primary {
+    .nis-pill {
+        display:inline-flex;
+        align-items:center;
+        gap: 6px;
+        padding: 2px 10px;
         border-radius: 999px;
-        padding-inline: 20px;
+        border: 1px solid rgba(148,163,184,.18);
+        background: rgba(15,23,42,.65);
+        font-size: .72rem;
+        color: #cbd5e1;
+        white-space: nowrap;
+    }
+    .nis-pill.ok  { border-color: rgba(34,197,94,.5); color: #bbf7d0; }
+    .nis-pill.bad { border-color: rgba(239,68,68,.55); color: #fecaca; }
+    .nis-pill .d { width:6px; height:6px; border-radius:999px; background: currentColor; }
+
+    .modal-modern .btn-primary {
+        border-radius: 999px;
+        padding: .55rem 1.2rem;
         font-size: .85rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
         background: linear-gradient(90deg, #22c55e, #16a34a);
         border: none;
-        box-shadow: 0 0 18px rgba(16, 185, 129, 0.7);
+        box-shadow: 0 10px 28px rgba(22,163,74,.45);
     }
 
-    .modal-neon .btn-primary:hover {
-        filter: brightness(1.05);
+    .modal-modern .btn-primary:hover { filter: brightness(1.05); }
+
+    .modal-modern .btn-primary:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        filter: saturate(.7);
+        box-shadow: none;
     }
 
-    .modal-neon .btn-light {
+    .modal-modern .btn-light {
         border-radius: 999px;
         font-size: .82rem;
+        padding: .5rem 1rem;
+        background: rgba(226,232,240,.92);
+        border: none;
     }
 
     @media (max-width: 768px) {
-        .neon-layout {
-            grid-template-columns: 1fr;
-        }
-        .neon-left {
-            border-right: none;
-            border-bottom: 1px solid rgba(37, 99, 235, 0.4);
-        }
-        .neon-left::after {
-            border-right: none;
-            border-bottom: 2px solid rgba(56, 189, 248, 0.8);
-            border-radius: 0 0 20px 20px;
-        }
+        .modern-layout { grid-template-columns: 1fr; }
+        .modern-left { border-right: none; border-bottom: 1px solid rgba(148,163,184,.12); }
+        .modal-modern .modal-dialog { margin: 10px; }
     }
 </style>
 
@@ -439,6 +453,7 @@
             <table class="table table-sm catalog-table align-middle mb-1">
                 <thead>
                 <tr>
+                    <th style="width:90px;">ID Buku</th>
                     <th style="width:80px;">Cover</th>
                     <th>Judul & Deskripsi</th>
                     <th>Pengarang</th>
@@ -453,7 +468,8 @@
                 @forelse ($books as $book)
                     @php $tersedia = $book->stock > 0; @endphp
                     <tr>
-                        {{-- COVER --}}
+                        <td>{{ $book->book_code ?? '-' }}</td>
+
                         <td>
                             @if($book->cover)
                                 <img src="{{ asset('storage/'.$book->cover) }}"
@@ -467,14 +483,10 @@
                             @endif
                         </td>
 
-                        {{-- JUDUL + DESKRIPSI --}}
                         <td>
                             <div class="book-title-cell">{{ $book->title }}</div>
                             @if($book->description)
-                                <div class="book-desc">
-                                    {{-- INI DOANG YANG DIUBAH: tampilkan full --}}
-                                    {{ $book->description }}
-                                </div>
+                                <div class="book-desc">{{ $book->description }}</div>
                             @endif
                         </td>
 
@@ -507,13 +519,13 @@
                                 data-book-cover="{{ $book->cover ? asset('storage/'.$book->cover) : '' }}"
                                 data-book-desc="{{ $book->description ?? '' }}"
                             >
-                                Pinjam Buku
+                                Ajukan Peminjaman
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-3">
+                        <td colspan="9" class="text-center text-muted py-3">
                             Belum ada data buku yang tercatat.
                         </td>
                     </tr>
@@ -533,107 +545,169 @@
             </div>
         </div>
 
-        {{-- LINK KEMBALI --}}
         <div class="catalog-footer-link mt-2">
             <a href="{{ route('home') }}">&larr; Kembali ke Beranda</a>
         </div>
     </div>
 </div>
 
-{{-- MODAL FORM PEMINJAMAN (NEON) --}}
-<div class="modal fade modal-neon" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+{{-- MODAL FORM PEMINJAMAN (MODERN GLASS) --}}
+<div class="modal fade modal-modern" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('student.borrow.store') }}">
             @csrf
             <input type="hidden" name="book_id" id="borrowBookId">
 
-            <div class="neon-layout">
-                {{-- PANEL KIRI --}}
-                <div class="neon-left">
-                    <div>
-                        <div class="neon-welcome">PEMINJAMAN</div>
-                        <div class="neon-title">Form Peminjaman Buku</div>
-                        <div class="neon-sub">
-                            Lengkapi data di samping untuk mengajukan peminjaman.
-                            Data akan langsung tersimpan di sistem perpustakaan.
-                        </div>
+            <div class="modal-header">
+                <h5 class="modal-modern-title" id="borrowModalLabel">
+                    ✨ Pengajuan Peminjaman
+                </h5>
+                <div class="modal-modern-badge">
+                    <span class="dot"></span>
+                    Maks. <strong>3</strong> pengajuan/peminjaman aktif
+                </div>
+            </div>
 
-                        <div class="neon-book-info">
-                            <img id="borrowBookCoverPreview"
-                                 src=""
-                                 alt="Cover"
-                                 class="neon-book-cover d-none">
-                            <div>
-                                <div class="neon-book-title" id="borrowBookTitleText">Judul Buku</div>
-                                <div class="neon-book-desc" id="borrowBookDescText">
-                                    Deskripsi singkat buku akan tampil di sini.
+            <div class="modal-body">
+                <div class="modern-layout">
+                    {{-- KIRI --}}
+                    <div class="modern-left">
+                        <div>
+                            <div class="modern-welcome">PERPUSTAKAAN</div>
+                            <div class="modern-title">Ajukan Peminjaman Buku</div>
+                            <div class="modern-sub">
+                                Isi data di samping. Setelah diajukan, admin akan memproses.
+                                Jika disetujui, status berubah menjadi <strong>Dipinjam</strong>.
+                            </div>
+
+                            <div class="modern-book">
+                                <img id="borrowBookCoverPreview" src="" alt="Cover" class="modern-cover d-none">
+                                <div>
+                                    <div class="modern-book-title" id="borrowBookTitleText">Judul Buku</div>
+                                    <div class="modern-book-desc" id="borrowBookDescText">
+                                        Deskripsi singkat buku akan tampil di sini.
+                                    </div>
+                                    <div class="modern-note">
+                                        *Pastikan NIS sesuai data anggota perpustakaan.
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="neon-small-note">
-                            *Pastikan NIS sesuai dengan data anggota perpustakaan.
-                        </div>
-                    </div>
-                </div>
-
-                {{-- PANEL KANAN --}}
-                <div class="neon-right">
-                    <div>
-                        <div class="borrow-info-box">
-                            <span class="borrow-info-dot"></span>
-                            <span>
-                                Maksimal <strong>3 buku aktif</strong> per siswa. Tanggal pinjam dari hari ini,
-                                jatuh tempo otomatis dari lama pinjam.
-                            </span>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label">Nama Lengkap</label>
-                            <input type="text" name="student_name" class="form-control" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label">NIS</label>
-                            <input type="text" name="student_nis" class="form-control" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label">Kelas</label>
-                            <input type="text" name="student_class" class="form-control"
-                                   placeholder="Contoh: 7A / 8B / 9C" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label">Lama Pinjam</label>
-                            <select name="duration" class="form-select" required>
-                                @for($i = 1; $i <= 7; $i++)
-                                    <option value="{{ $i }}">{{ $i }} hari</option>
-                                @endfor
-                            </select>
+                        <div class="modern-note">
+                            Tip: isi NIS → nama & kelas akan terisi otomatis.
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            Kirim Permintaan Pinjam
-                        </button>
+                    {{-- KANAN --}}
+                    <div class="modern-right">
+                        <div>
+                            <div class="modern-info">
+                                <div class="i">ℹ️</div>
+                                <div>
+                                    Maksimal <strong>3</strong> pengajuan/peminjaman aktif per siswa.
+                                    Lama pinjam 1–7 hari (jatuh tempo dihitung otomatis saat diproses admin).
+                                </div>
+                            </div>
+
+                            <div class="mb-2 mt-3">
+                                <label class="form-label">NIS</label>
+                                <input id="borrowNis" type="text" name="student_nis" class="form-control" placeholder="Contoh: 14022019" required>
+                                <div id="nisHint" class="nis-hint" style="display:none;">
+                                    <span id="nisPill" class="nis-pill"><span class="d"></span><span id="nisPillText">-</span></span>
+                                    <span id="nisMsg">-</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input id="borrowName" type="text" name="student_name" class="form-control" placeholder="Otomatis dari NIS" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Kelas</label>
+                                <input id="borrowClass" type="text" name="student_class" class="form-control" placeholder="Contoh: 7A / 8B / 9C" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Lama Pinjam</label>
+                                <select name="duration" class="form-select" required>
+                                    @for($i = 1; $i <= 7; $i++)
+                                        <option value="{{ $i }}">{{ $i }} hari</option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                            <button id="borrowSubmitBtn" type="submit" class="btn btn-primary btn-sm" disabled>
+                                Ajukan Peminjaman
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </form>
     </div>
 </div>
 
-{{-- SCRIPT UNTUK ISI DATA MODAL + AUTO-FILL NIS (TANPA NOTIF POPUP) --}}
 @push('scripts')
 <script>
-    // Isi data buku ke dalam modal saat tombol "Pinjam Buku" diklik
     const borrowModal = document.getElementById('borrowModal');
+
+    function resetBorrowForm(){
+        const nisInput = document.getElementById('borrowNis');
+        const nameInput = document.getElementById('borrowName');
+        const classInput = document.getElementById('borrowClass');
+        const submitBtn = document.getElementById('borrowSubmitBtn');
+
+        const hint = document.getElementById('nisHint');
+        const pill = document.getElementById('nisPill');
+        const pillText = document.getElementById('nisPillText');
+        const msg = document.getElementById('nisMsg');
+
+        if(nisInput) nisInput.value = '';
+        if(nameInput) nameInput.value = '';
+        if(classInput) classInput.value = '';
+        if(submitBtn) submitBtn.disabled = true;
+
+        if(hint) hint.style.display = 'none';
+        if(pill){
+            pill.classList.remove('ok','bad');
+        }
+        if(pillText) pillText.textContent = '-';
+        if(msg) msg.textContent = '';
+    }
+
+    function setNisStatus(type, message){
+        const hint = document.getElementById('nisHint');
+        const pill = document.getElementById('nisPill');
+        const pillText = document.getElementById('nisPillText');
+        const msg = document.getElementById('nisMsg');
+
+        if(!hint || !pill || !pillText || !msg) return;
+
+        hint.style.display = 'flex';
+        pill.classList.remove('ok','bad');
+
+        if(type === 'ok'){
+            pill.classList.add('ok');
+            pillText.textContent = 'TERDAFTAR';
+        }else if(type === 'bad'){
+            pill.classList.add('bad');
+            pillText.textContent = 'TIDAK ADA';
+        }else{
+            pillText.textContent = 'CEK...';
+        }
+
+        msg.textContent = message || '';
+    }
 
     borrowModal.addEventListener('show.bs.modal', function (event) {
         const button   = event.relatedTarget;
+
         const bookId   = button.getAttribute('data-book-id');
         const title    = button.getAttribute('data-book-title');
         const coverUrl = button.getAttribute('data-book-cover');
@@ -653,39 +727,79 @@
             imgEl.classList.add('d-none');
             imgEl.src = '';
         }
+
+        // reset input tiap buka modal (biar gak nyangkut dari sebelumnya)
+        resetBorrowForm();
     });
 
     document.addEventListener('DOMContentLoaded', function () {
-        const nisInput = document.querySelector('input[name="student_nis"]');
-        if (!nisInput) return;
+        const nisInput  = document.getElementById('borrowNis');
+        const nameInput = document.getElementById('borrowName');
+        const classInput= document.getElementById('borrowClass');
+        const submitBtn = document.getElementById('borrowSubmitBtn');
 
-        nisInput.addEventListener('change', async function () {
+        if (!nisInput || !submitBtn) return;
+
+        let timer = null;
+
+        function clearStudent(){
+            if(nameInput) nameInput.value = '';
+            if(classInput) classInput.value = '';
+            submitBtn.disabled = true;
+        }
+
+        nisInput.addEventListener('input', function () {
             const nis = this.value.trim();
-            if (!nis) return;
+            clearTimeout(timer);
 
-            const nameInput  = document.querySelector('input[name="student_name"]');
-            const classInput = document.querySelector('input[name="student_class"]');
-
-            try {
-                const res = await fetch('/api/member/' + encodeURIComponent(nis), {
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                let data = null;
-                try { data = await res.json(); } catch (e) {}
-
-                if (!res.ok || !data || data.not_found) {
-                    if (nameInput)  nameInput.value  = '';
-                    if (classInput) classInput.value = '';
-                    return;
-                }
-
-                if (nameInput)  nameInput.value  = data.name  || '';
-                if (classInput) classInput.value = data.class || '';
-            } catch (e) {
-                if (nameInput)  nameInput.value  = '';
-                if (classInput) classInput.value = '';
+            if (!nis) {
+                clearStudent();
+                setNisStatus('', '');
+                document.getElementById('nisHint').style.display = 'none';
+                return;
             }
+
+            // biar ga spam api
+            if (nis.length < 6) {
+                clearStudent();
+                setNisStatus('bad', 'NIS terlalu pendek.');
+                return;
+            }
+
+            setNisStatus('', 'Mengecek NIS...');
+            timer = setTimeout(async () => {
+                try {
+                    const res = await fetch('/api/member/' + encodeURIComponent(nis), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    let data = null;
+                    try { data = await res.json(); } catch (e) {}
+
+                    if (!res.ok || !data || data.not_found) {
+                        clearStudent();
+                        setNisStatus('bad', 'NIS tidak terdaftar. Hubungi admin.');
+                        return;
+                    }
+
+                    if (nameInput)  nameInput.value  = data.name  || '';
+                    if (classInput) classInput.value = data.class || '';
+
+                    submitBtn.disabled = !(nameInput.value && classInput.value);
+                    setNisStatus('ok', 'Data ditemukan. Nama & kelas terisi otomatis.');
+                } catch (e) {
+                    clearStudent();
+                    setNisStatus('bad', 'Gagal cek NIS (API error).');
+                }
+            }, 350);
+        });
+
+        // kalau user isi manual nama/kelas, tombol ikut aktif
+        [nameInput, classInput].forEach(el => {
+            if(!el) return;
+            el.addEventListener('input', () => {
+                submitBtn.disabled = !(nisInput.value.trim() && nameInput.value.trim() && classInput.value.trim());
+            });
         });
     });
 </script>

@@ -11,38 +11,71 @@ return new class extends Migration
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
 
-            /**
-             * DATA SISWA (Diisi manual, tanpa login)
-             * A = Nama, B = NIS, Kelas
-             */
-            $table->string('student_name');      // contoh: "Rizky Ramadhan"
-            $table->string('student_nis');       // contoh: "12345"
-            $table->string('student_class');     // contoh: "8A"
+            /*
+            |------------------------------------------------------------------
+            | RELASI MEMBER (opsional – dari peminjaman siswa)
+            |------------------------------------------------------------------
+            */
+            $table->foreignId('member_id')
+                ->nullable()
+                ->constrained('members')
+                ->nullOnDelete();
 
-            /**
-             * RELASI KE BUKU
-             */
+            /*
+            |------------------------------------------------------------------
+            | DATA SISWA (snapshot, walau member berubah)
+            |------------------------------------------------------------------
+            */
+            $table->string('student_name');
+            $table->string('student_nis');
+            $table->string('student_class');
+
+            /*
+            |------------------------------------------------------------------
+            | RELASI BUKU
+            |------------------------------------------------------------------
+            */
             $table->foreignId('book_id')
                 ->constrained('books')
                 ->cascadeOnDelete();
 
-            /**
-             * DATA PEMINJAMAN
-             */
-            $table->date('borrow_date');         // tanggal pinjam (dipilih siswa)
-            $table->date('due_date');            // otomatis = tanggal pinjam + 7 hari
-            $table->date('return_date')->nullable(); // isi saat pengembalian
+            /*
+            |------------------------------------------------------------------
+            | DATA TANGGAL
+            |------------------------------------------------------------------
+            | Diajukan  → borrow_date & due_date boleh NULL
+            | Dipinjam → wajib terisi
+            */
+            $table->date('borrow_date')->nullable();
+            $table->date('due_date')->nullable();
+            $table->date('return_date')->nullable();
 
-            /**
-             * LAMA PINJAM (fixed 7 hari)
-             */
+            /*
+            |------------------------------------------------------------------
+            | DURASI
+            |------------------------------------------------------------------
+            */
             $table->unsignedTinyInteger('duration')->default(7);
 
-            /**
-             * STATUS PEMINJAMAN
-             */
-            $table->enum('status', ['Dipinjam', 'Kembali', 'Terlambat'])
-                ->default('Dipinjam');
+            /*
+            |------------------------------------------------------------------
+            | STATUS PEMINJAMAN
+            |------------------------------------------------------------------
+            */
+            $table->enum('status', [
+                'Diajukan',
+                'Dipinjam',
+                'Kembali',
+                'Terlambat'
+            ])->default('Diajukan');
+
+            /*
+            |------------------------------------------------------------------
+            | KADALUARSA & SOFT DELETE
+            |------------------------------------------------------------------
+            */
+            $table->timestamp('expired_at')->nullable(); // kapan auto kadaluarsa
+            $table->softDeletes();                       // deleted_at
 
             $table->timestamps();
         });

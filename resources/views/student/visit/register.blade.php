@@ -88,11 +88,8 @@
         margin-top: 6px;
     }
 
-    .visit-btn:hover {
-        filter: brightness(1.05);
-    }
+    .visit-btn:hover { filter: brightness(1.05); }
 
-    /* TOMBOL KEMBALI */
     .btn-back {
         display: block;
         width: 100%;
@@ -126,6 +123,19 @@
         margin-top:-6px;
         margin-bottom:6px;
     }
+
+    /* helper kecil buat status auto-fill */
+    .helper {
+        display:flex;
+        gap:.45rem;
+        align-items:center;
+        font-size:.78rem;
+        margin-top:-6px;
+        margin-bottom:8px;
+        color:#6b7280;
+    }
+    .helper.ok { color:#16a34a; }
+    .helper.bad { color:#dc2626; }
 </style>
 
 <div class="visit-page-bg">
@@ -164,18 +174,43 @@
 
             {{-- Nama --}}
             <label class="visit-label">Nama Lengkap</label>
-            <input type="text" name="name" class="visit-input"
-                   placeholder="Contoh: Ahmad Rizky Pratama" value="{{ old('name') }}" required>
+            <input
+                type="text"
+                name="name"
+                id="visit_name"
+                class="visit-input"
+                placeholder="Contoh: Ahmad Rizky Pratama"
+                value="{{ old('name') }}"
+                required
+            >
 
             {{-- NIS --}}
             <label class="visit-label">NIS</label>
-            <input type="text" name="nis" class="visit-input"
-                   placeholder="Masukkan NIS siswa" value="{{ old('nis') }}" required>
+            <input
+                type="text"
+                name="nis"
+                id="visit_nis"
+                class="visit-input"
+                placeholder="Masukkan NIS siswa"
+                value="{{ old('nis') }}"
+                required
+                autocomplete="off"
+            >
+
+            {{-- status auto fill --}}
+            <div id="nis_helper" class="helper" style="display:none;"></div>
 
             {{-- Kelas --}}
             <label class="visit-label">Kelas</label>
-            <input type="text" name="class" class="visit-input"
-                   placeholder="Contoh: 7A / 8B / 9C" value="{{ old('class') }}" required>
+            <input
+                type="text"
+                name="class"
+                id="visit_class"
+                class="visit-input"
+                placeholder="Contoh: 7A / 8B / 9C"
+                value="{{ old('class') }}"
+                required
+            >
 
             {{-- Keperluan --}}
             <label class="visit-label">Keperluan Kunjungan</label>
@@ -206,4 +241,106 @@
         </form>
     </div>
 </div>
+
+{{-- AUTO FILL dari NIS + fallback manual --}}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const nisEl   = document.getElementById('visit_nis');
+    const nameEl  = document.getElementById('visit_name');
+    const classEl = document.getElementById('visit_class');
+    const helper  = document.getElementById('nis_helper');
+
+    // state: kalau auto-fill berhasil, kita lock name + class
+    function setLocked(locked) {
+        nameEl.readOnly  = locked;
+        classEl.readOnly = locked;
+
+        // biar kelihatan "dikunci" tapi tetap cantik
+        if (locked) {
+            nameEl.style.background = '#eef2ff';
+            classEl.style.background = '#eef2ff';
+        } else {
+            nameEl.style.background = '#f9fafb';
+            classEl.style.background = '#f9fafb';
+        }
+    }
+
+    function showHelper(type, text) {
+        helper.style.display = 'flex';
+        helper.classList.remove('ok', 'bad');
+        helper.classList.add(type);
+        helper.innerHTML = text;
+    }
+
+    function clearHelper() {
+        helper.style.display = 'none';
+        helper.innerHTML = '';
+        helper.classList.remove('ok', 'bad');
+    }
+
+    async function fetchMember(nis) {
+        try {
+            const res = await fetch('/api/member/' + encodeURIComponent(nis), {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            // kalau 404 / not ok => manual
+            if (!res.ok) {
+                setLocked(false);
+                showHelper('bad', '❌ NIS tidak terdaftar. Silakan isi Nama & Kelas manual.');
+                return;
+            }
+
+            const data = await res.json();
+
+            if (!data || data.not_found) {
+                setLocked(false);
+                showHelper('bad', '❌ NIS tidak terdaftar. Silakan isi Nama & Kelas manual.');
+                return;
+            }
+
+            // sukses -> auto fill + lock
+            nameEl.value  = data.name  || '';
+            classEl.value = data.class || '';
+
+            setLocked(true);
+            showHelper('ok', '✅ Data ditemukan. Nama & Kelas otomatis terisi dari NIS.');
+        } catch (e) {
+            // kalau API error / offline -> manual
+            setLocked(false);
+            showHelper('bad', '⚠️ Gagal mengambil data dari NIS. Silakan isi manual.');
+        }
+    }
+
+    // default: manual dulu (supaya gak mengganggu old() yang sudah ada)
+    setLocked(false);
+    clearHelper();
+
+    // trigger saat user selesai isi NIS
+    let timer = null;
+
+    function scheduleLookup() {
+        const nis = (nisEl.value || '').trim();
+        if (!nis) {
+            setLocked(false);
+            clearHelper();
+            return;
+        }
+
+        // debounce biar gak spam request
+        clearTimeout(timer);
+        timer = setTimeout(() => fetchMember(nis), 350);
+    }
+
+    nisEl.addEventListener('input', scheduleLookup);
+    nisEl.addEventListener('change', scheduleLookup);
+    nisEl.addEventListener('blur', scheduleLookup);
+
+    // kalau ada old('nis') dan user reload, auto-lookup juga
+    const initialNis = (nisEl.value || '').trim();
+    if (initialNis) {
+        fetchMember(initialNis);
+    }
+});
+</script>
 @endsection

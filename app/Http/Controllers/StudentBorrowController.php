@@ -5,108 +5,116 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Member;
 use App\Models\Borrowing;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class StudentBorrowController extends Controller
 {
     /**
-     * Simpan peminjaman dari form di katalog.
-     * Route: POST /pinjam-buku  (name: student.borrow.store)
+     * SISWA AJUKAN PINJAM (status: Diajukan)
+     * expired_at otomatis +2 hari dari sekarang
      */
     public function store(Request $request)
     {
-        // 1. Validasi input dari form
-        $data = $request->validate([
-            'book_id'       => 'required|exists:books,id',
-            'student_name'  => 'required|string|max:255',
-            'student_nis'   => 'required|string|max:50',
-            'student_class' => 'required|string|max:50',
-            'duration'      => 'required|integer|min:1|max:7',
+        // kompatibel: terima field lama & baru
+        $request->merge([
+            'nis'   => $request->nis   ?? $request->student_nis,
+            'name'  => $request->name  ?? $request->student_name,
+            'class' => $request->class ?? $request->student_class,
+            'days'  => $request->days  ?? $request->duration,
         ]);
 
-        // 2. Ambil buku yang dipilih
+        $data = $request->validate([
+            'book_id' => 'required|exists:books,id',
+            'nis'     => 'required|string|max:50',
+            'name'    => 'required|string|max:255',
+            'class'   => 'required|string|max:50',
+            'days'    => 'required|integer|min:1|max:7',
+        ]);
+
         $book = Book::findOrFail($data['book_id']);
 
-        // Cek stok buku
         if ($book->stock <= 0) {
-            return back()
-                ->withInput()
-                ->with('error', 'Stok buku sudah habis.');
+            return back()->withInput()->with('error', 'Stok buku sudah habis.');
         }
 
-        // 3. Cari / buat anggota berdasarkan NIS
-        $member = Member::firstOrCreate(
-            ['nis' => $data['student_nis']], // kunci unik
-            [
-                'name'  => $data['student_name'],
-                'class' => $data['student_class'],
-            ]
-        );
+        $nis = trim((string) $data['nis']);
+        $member = Member::where('nis', $nis)->first();
 
-        // Kalau data nama / kelas berubah, update
-        if ($member->name !== $data['student_name'] ||
-            $member->class !== $data['student_class']) {
-
-            $member->update([
-                'name'  => $data['student_name'],
-                'class' => $data['student_class'],
-            ]);
+        if (!$member) {
+            return back()->withInput()->with('error', 'NIS tidak terdaftar. Hubungi admin.');
         }
 
-        // 4. Cek maksimal 3 buku aktif (return_date masih NULL)
+        // ✅ Maksimal 3 buku aktif (Diajukan + Dipinjam)
         $activeCount = Borrowing::where('member_id', $member->id)
+            ->whereIn('status', ['Diajukan', 'Dipinjam'])
             ->whereNull('return_date')
             ->count();
 
         if ($activeCount >= 3) {
-            return back()
-                ->withInput()
-                ->with('error', 'Maksimal 3 buku aktif per siswa. Kembalikan buku terlebih dahulu.');
+            return back()->withInput()->with('error', 'Maksimal 3 buku aktif. Kembalikan buku dulu.');
         }
 
-        // 5. Hitung tanggal pinjam & jatuh tempo
-        $today    = Carbon::today();                      // tanggal pinjam = hari ini
-        $duration = (int) $data['duration'];             // lama pinjam (hari)
-        $dueDate  = $today->copy()->addDays($duration);  // tanggal jatuh tempo
+        // cegah dobel ajukan buku yang sama (Diajukan / Dipinjam)
+        $already = Borrowing::where('member_id', $member->id)
+            ->where('book_id', $book->id)
+            ->whereIn('status', ['Diajukan', 'Dipinjam'])
+            ->whereNull('return_date')
+            ->exists();
 
-        // 6. Simpan ke tabel borrowings
-        Borrowing::create([
+        if ($already) {
+            return back()->withInput()->with('error', 'Buku ini sudah diajukan / sedang dipinjam.');
+        }
+
+        $expire = now()->addDays(2);
+
+        $payload = [
             'member_id'     => $member->id,
             'book_id'       => $book->id,
-            'student_name'  => $data['student_name'],
-            'student_nis'   => $data['student_nis'],
-            'student_class' => $data['student_class'],
-            'borrow_date'   => $today,
-            'due_date'      => $dueDate,
+
+            'student_name'  => $member->name,
+            'student_nis'   => $member->nis,
+            'student_class' => $member->class,
+
+            'borrow_date'   => null,
+            'due_date'      => null,
             'return_date'   => null,
-            'status'        => 'Dipinjam',
-        ]);
+            'duration'      => (int) $data['days'],
+            'status'        => 'Diajukan',
 
-        // 7. Kurangi stok buku
-        $book->decrement('stock');
+            // ✅ masa pengajuan 2 hari
+            'expired_at'    => $expire,
 
-        // 8. Redirect kembali ke katalog dengan pesan sukses
+            // ✅ max perpanjang 2x
+            'extend_count'     => 0,
+            'last_extended_at' => null,
+        ];
+
+        // ✅ kalau tabel kamu juga punya kolom expires_at, isi juga biar konsisten
+        if (Schema::hasColumn('borrowings', 'expires_at')) {
+            $payload['expires_at'] = $expire;
+        }
+
+        Borrowing::create($payload);
+
         return redirect()
             ->route('catalog')
-            ->with('success', 'Permintaan peminjaman berhasil disimpan.');
+            ->with('success', 'Pengajuan berhasil dikirim. Tunggu admin memproses.');
     }
 
     /**
-     * Halaman cek status peminjaman siswa.
-     * Route: GET /cek-status (name: student.borrow.status)
-     * Param: ?nis=12345
+     * Halaman cek status peminjaman/pengajuan berdasarkan NIS
      */
     public function status(Request $request)
     {
         $nis = $request->query('nis');
-
         $borrowings = collect();
 
         if ($nis) {
             $borrowings = Borrowing::where('student_nis', $nis)
-                ->orderByDesc('borrow_date')
                 ->with('book')
+                ->orderByDesc('created_at')
                 ->get();
         }
 
@@ -116,15 +124,73 @@ class StudentBorrowController extends Controller
         ]);
     }
 
-    /**
-     * Kalau kamu pakai form POST untuk cek status,
-     * bisa diarahkan ke method status di atas.
-     * Route: POST /cek-status (name: student.borrow.check)
-     */
     public function checkStatus(Request $request)
     {
         $nis = $request->input('nis');
-
         return redirect()->route('student.borrow.status', ['nis' => $nis]);
+    }
+
+    /**
+     * ✅ Alias kalau route kamu manggil extendRequest (biar aman tanpa ubah web.php)
+     */
+    public function extendRequest(Request $request, Borrowing $borrowing)
+    {
+        return $this->extend($request, $borrowing);
+    }
+
+    /**
+     * ✅ SISWA PERPANJANG PENGAJUAN (MAX 2x)
+     * Route: POST /pengajuan/{borrowing}/perpanjang
+     */
+    public function extend(Request $request, Borrowing $borrowing)
+    {
+        $data = $request->validate([
+            'nis' => 'required|string|max:50',
+        ]);
+
+        // keamanan: NIS harus sama dengan pemilik pengajuan
+        if (trim((string) $data['nis']) !== trim((string) $borrowing->student_nis)) {
+            return back()->with('error', 'Akses ditolak. Ini bukan pengajuan milik kamu.');
+        }
+
+        // hanya boleh extend kalau masih Diajukan
+        if ($borrowing->status !== 'Diajukan') {
+            return back()->with('error', 'Hanya pengajuan status Diajukan yang bisa diperpanjang.');
+        }
+
+        // ✅ ambil tanggal kadaluarsa dari expired_at / expires_at (mana yang ada)
+        $rawExpire = $borrowing->expired_at ?? $borrowing->expires_at ?? null;
+
+        // kalau tidak ada sama sekali, anggap dari sekarang
+        $expireDate = $rawExpire ? Carbon::parse($rawExpire) : now();
+
+        // kalau sudah expired
+        if ($expireDate->isPast()) {
+            return back()->with('error', 'Pengajuan sudah kadaluarsa. Silakan ajukan ulang.');
+        }
+
+        $extendCount = (int) ($borrowing->extend_count ?? 0);
+
+        // max 2x
+        if ($extendCount >= 2) {
+            return back()->with('error', 'Batas perpanjang pengajuan sudah maksimal (2x).');
+        }
+
+        // ✅ tambah 2 hari dari expire yang sekarang
+        $newExpire = $expireDate->copy()->addDays(2);
+
+        // ✅ update expired_at
+        $borrowing->expired_at = $newExpire;
+
+        // ✅ kalau kolom expires_at ada, update juga
+        if (array_key_exists('expires_at', $borrowing->getAttributes())) {
+            $borrowing->expires_at = $newExpire;
+        }
+
+        $borrowing->extend_count = $extendCount + 1;
+        $borrowing->last_extended_at = now();
+        $borrowing->save();
+
+        return back()->with('success', 'Pengajuan berhasil diperpanjang (+2 hari).');
     }
 }

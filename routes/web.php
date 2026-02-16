@@ -9,7 +9,9 @@ use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\StudentBorrowController;
 use App\Http\Controllers\ExcelImportController;
+
 use App\Models\Book;
+use App\Models\Member;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +21,46 @@ use App\Models\Book;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+
+/*
+|--------------------------------------------------------------------------
+| API (karena routes/api.php tidak ke-load)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('api')->group(function () {
+
+    Route::get('/ping', function () {
+        return response()->json([
+            'status'  => 'ok',
+            'message' => 'API berjalan normal'
+        ]);
+    });
+
+    Route::get('/member/{nis}', function ($nis) {
+        $nis = trim($nis);
+
+        $member = Member::where('nis', (string) $nis)->first();
+
+        if (!$member) {
+            return response()->json([
+                'not_found' => true,
+                'message'   => 'Data anggota tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'not_found' => false,
+            'name'      => $member->name,
+            'nis'       => $member->nis,
+            'class'     => $member->class,
+            'gender'    => $member->gender ?? null,
+            'phone'     => $member->phone ?? null,
+        ]);
+    });
+
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -32,9 +74,9 @@ Route::get('/katalog-buku', function () {
     if ($q) {
         $booksQuery->where(function ($query) use ($q) {
             $query->where('title', 'like', "%{$q}%")
-                  ->orWhere('author', 'like', "%{$q}%")
-                  ->orWhere('publisher', 'like', "%{$q}%")
-                  ->orWhere('year', 'like', "%{$q}%");
+                ->orWhere('author', 'like', "%{$q}%")
+                ->orWhere('publisher', 'like', "%{$q}%")
+                ->orWhere('year', 'like', "%{$q}%");
         });
     }
 
@@ -43,9 +85,10 @@ Route::get('/katalog-buku', function () {
     return view('student.books.catalog', compact('books', 'q'));
 })->name('catalog');
 
+
 /*
 |--------------------------------------------------------------------------
-| FORM PINJAM, CEK STATUS, KUNJUNGAN (SISWA)
+| SISWA – PINJAM, CEK STATUS, KUNJUNGAN
 |--------------------------------------------------------------------------
 */
 Route::post('/pinjam-buku', [StudentBorrowController::class, 'store'])
@@ -57,12 +100,22 @@ Route::get('/cek-status', [StudentBorrowController::class, 'status'])
 Route::post('/cek-status', [StudentBorrowController::class, 'checkStatus'])
     ->name('student.borrow.check');
 
+/**
+ * ✅ SISWA bisa perpanjang masa pengajuan (status: Diajukan)
+ * Contoh URL: POST /pengajuan/12/perpanjang
+ *
+ * 🔥 FIX: method di controller kamu namanya extendRequest, bukan extend
+ */
+Route::post('/pengajuan/{borrowing}/perpanjang', [StudentBorrowController::class, 'extend'])
+    ->name('student.borrow.extend');
+
 Route::get('/kunjungan', function () {
     return view('student.visit.register');
 })->name('visit.register');
 
 Route::post('/kunjungan', [VisitorController::class, 'store'])
     ->name('visit.store');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +131,7 @@ Route::post('login-admin', [AdminController::class, 'login'])
 Route::get('logout-admin', [AdminController::class, 'logout'])
     ->name('admin.logout');
 
+
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD ADMIN
@@ -86,46 +140,69 @@ Route::get('logout-admin', [AdminController::class, 'logout'])
 Route::get('admin/dashboard', [AdminController::class, 'dashboard'])
     ->name('admin.dashboard');
 
+
 /*
 |--------------------------------------------------------------------------
-| IMPORT DATA EXCEL (BUKU & ANGGOTA)
+| 📂 PENGAJUAN KADALUARSA (SOFT DELETE)
+|--------------------------------------------------------------------------
+*/
+Route::get('admin/borrowings/expired', [AdminController::class, 'expiredBorrowings'])
+    ->name('admin.borrowings.expired');
+
+
+/*
+|--------------------------------------------------------------------------
+| ACTION PENGAJUAN KADALUARSA
+|--------------------------------------------------------------------------
+*/
+Route::post('admin/borrowings/expired/{id}/restore', [AdminController::class, 'restoreExpiredBorrowing'])
+    ->name('admin.borrowings.expired.restore');
+
+Route::delete('admin/borrowings/expired/{id}/force-delete', [AdminController::class, 'forceDeleteExpiredBorrowing'])
+    ->name('admin.borrowings.expired.forceDelete');
+
+
+/*
+|--------------------------------------------------------------------------
+| 🔥 TAMBAHAN: HAPUS SEMUA PENGAJUAN KADALUARSA (CEPAT)
+|--------------------------------------------------------------------------
+*/
+Route::delete('admin/borrowings/expired/force-all', [AdminController::class, 'forceDeleteAllExpired'])
+    ->name('admin.borrowings.expired.forceAll');
+
+
+/*
+|--------------------------------------------------------------------------
+| IMPORT DATA EXCEL
 |--------------------------------------------------------------------------
 */
 Route::get('admin/import', [ExcelImportController::class, 'index'])
     ->name('admin.import.index');
 
-// Tombol "📥 Import Excel" di halaman buku
 Route::get('admin/import/books', [ExcelImportController::class, 'index'])
     ->name('books.import.form');
 
-// proses import
 Route::post('admin/import/books', [ExcelImportController::class, 'importBooks'])
     ->name('admin.import.books');
 
 Route::post('admin/import/members', [ExcelImportController::class, 'importMembers'])
     ->name('admin.import.members');
 
-// 🔴 route untuk tombol "Hapus Batch" (RIWAYAT IMPORT)
+/**
+ * ⚠️ Pastikan method destroyLog ADA di ExcelImportController
+ */
 Route::delete('admin/import/logs/{log}', [ExcelImportController::class, 'destroyLog'])
     ->name('admin.import.logs.destroy');
 
+
 /*
 |--------------------------------------------------------------------------
-| CETAK KARTU ANGGOTA (harus di atas resource members)
+| CETAK KARTU ANGGOTA
 |--------------------------------------------------------------------------
 */
 Route::get('members/{member}/cetak-kartu', [MemberController::class, 'cetakKartu'])
     ->name('members.cetak.kartu');
 
-/*
-|--------------------------------------------------------------------------
-| CRUD MASTER DATA
-|--------------------------------------------------------------------------
-*/
-Route::resource('members', MemberController::class);
-Route::resource('books', BookController::class);
-Route::resource('borrowings', BorrowingController::class);
-Route::resource('visitors', VisitorController::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -137,3 +214,14 @@ Route::get('visitors/export', [VisitorController::class, 'exportExcel'])
 
 Route::get('visitors/print', [VisitorController::class, 'print'])
     ->name('visitors.print');
+
+
+/*
+|--------------------------------------------------------------------------
+| CRUD MASTER DATA
+|--------------------------------------------------------------------------
+*/
+Route::resource('members', MemberController::class);
+Route::resource('books', BookController::class);
+Route::resource('borrowings', BorrowingController::class);
+Route::resource('visitors', VisitorController::class);

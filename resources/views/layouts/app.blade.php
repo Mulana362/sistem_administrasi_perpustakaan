@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- supaya title bisa diganti dari tiap halaman --}}
     <title>@yield('title', 'Perpustakaan SMPN 1 Bandung')</title>
 
     {{-- MATIKAN ALERT NATIVE (GA NGUBAH UI) --}}
@@ -22,6 +21,9 @@
 
     <!-- Custom Style -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    {{-- optional: kalau ada halaman push CSS --}}
+    @stack('styles')
 </head>
 <body>
 
@@ -38,7 +40,7 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-{{-- INI YANG PENTING: render semua script yang di-push dari view --}}
+{{-- WAJIB: render semua script dari view (auto-fill NIS ada di sini) --}}
 @stack('scripts')
 
 </body>
