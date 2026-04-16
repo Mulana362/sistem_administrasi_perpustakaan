@@ -22,9 +22,14 @@ class Borrowing extends Model
         'status',
         'expired_at',
 
-        // ✅ tambahan untuk fitur perpanjang
+        // tambahan fitur perpanjang
         'extend_count',
         'last_extended_at',
+
+        // tambahan fitur denda
+        'late_days',
+        'fine_amount',
+        'fine_paid',
     ];
 
     protected $casts = [
@@ -33,9 +38,14 @@ class Borrowing extends Model
         'return_date'       => 'date',
         'expired_at'        => 'datetime',
 
-        // ✅ cast tambahan
+        // cast tambahan
         'last_extended_at'  => 'datetime',
         'extend_count'      => 'integer',
+
+        // cast denda
+        'late_days'         => 'integer',
+        'fine_amount'       => 'integer',
+        'fine_paid'         => 'boolean',
     ];
 
     public function member()

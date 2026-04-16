@@ -71,25 +71,32 @@
         @csrf
         @method('PUT')
 
+        {{-- ID BUKU --}}
+        <div class="mb-3">
+            <label>ID Buku</label>
+            <input type="text" name="book_code" class="form-control"
+                   value="{{ old('book_code', $book->book_code) }}" required>
+        </div>
+
         {{-- JUDUL --}}
         <div class="mb-3">
             <label>Judul Buku</label>
             <input type="text" name="title" class="form-control"
-                   value="{{ $book->title }}" required>
+                   value="{{ old('title', $book->title) }}" required>
         </div>
 
         {{-- PENGARANG --}}
         <div class="mb-3">
             <label>Pengarang</label>
             <input type="text" name="author" class="form-control"
-                   value="{{ $book->author }}" required>
+                   value="{{ old('author', $book->author) }}" required>
         </div>
 
         {{-- PENERBIT --}}
         <div class="mb-3">
             <label>Penerbit</label>
             <input type="text" name="publisher" class="form-control"
-                   value="{{ $book->publisher }}" required>
+                   value="{{ old('publisher', $book->publisher) }}" required>
         </div>
 
         {{-- TAHUN --}}
@@ -97,14 +104,45 @@
             <label>Tahun Terbit</label>
             <input type="number" name="year" class="form-control"
                    min="1900" max="{{ date('Y') }}"
-                   value="{{ $book->year }}" required>
+                   value="{{ old('year', $book->year) }}" required>
+        </div>
+
+        {{-- NO RAK --}}
+        <div class="mb-3">
+            <label>No Rak</label>
+            <input type="text" name="no_rak" class="form-control"
+                   placeholder="Contoh: A-01 / Rak Novel-02"
+                   value="{{ old('no_rak', $book->no_rak) }}">
         </div>
 
         {{-- STOK --}}
         <div class="mb-3">
             <label>Stok Buku</label>
             <input type="number" name="stock" class="form-control"
-                   min="0" value="{{ $book->stock }}" required>
+                   min="0" value="{{ old('stock', $book->stock) }}" required>
+        </div>
+
+        {{-- COVER BUKU (opsional) --}}
+        <div class="mb-3">
+            <label>Cover Buku (opsional)</label>
+            <input type="file" name="cover" class="form-control">
+            <small class="text-muted">Format: jpg, jpeg, png, webp. Maks 2 MB.</small>
+
+            @if (!empty($book->cover))
+                <div class="mt-2">
+                    <small class="text-muted d-block mb-1">Cover saat ini:</small>
+                    <img src="{{ asset('storage/' . $book->cover) }}"
+                         alt="Cover Buku"
+                         style="width:90px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+                </div>
+            @endif
+        </div>
+
+        {{-- DESKRIPSI --}}
+        <div class="mb-3">
+            <label>Deskripsi Buku (opsional)</label>
+            <textarea name="description" class="form-control" rows="3"
+                      placeholder="Ringkasan singkat isi buku">{{ old('description', $book->description) }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary w-100 mb-2">

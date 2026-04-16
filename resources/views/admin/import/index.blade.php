@@ -143,6 +143,7 @@
         font-size: .78rem;
         color: #6b7280;
         margin-bottom: 10px;
+        line-height: 1.7;
     }
 
     .import-note strong {
@@ -218,6 +219,20 @@
         background: #fee2e2;
         color: #991b1b;
     }
+
+    @media (max-width: 768px) {
+        .import-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .import-card-header,
+        .logs-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
 </style>
 
 <div class="import-wrapper">
@@ -246,6 +261,7 @@
             {{ session('success') }}
         </div>
     @endif
+
     @if(session('error'))
         <div class="alert alert-danger py-2">
             {{ session('error') }}
@@ -264,13 +280,20 @@
                 </div>
                 <span class="import-card-tag">Sheet Buku</span>
             </div>
+
             <div class="import-card-body">
                 <p class="import-note">
-                    Kolom disarankan:<br>
-                    <strong>A</strong> No (optional), <strong>B</strong> Cover (nama file atau URL),<br>
-                    <strong>C</strong> Judul, <strong>D</strong> Deskripsi,<br>
-                    <strong>E</strong> Pengarang, <strong>F</strong> Penerbit,<br>
-                    <strong>G</strong> Tahun, <strong>H</strong> Stok.
+                    Kolom Excel buku yang dipakai:<br>
+                    <strong>A</strong> No (opsional),<br>
+                    <strong>B</strong> ID Buku / Book Code,<br>
+                    <strong>C</strong> Cover (nama file di folder <code>storage/covers</code> atau URL),<br>
+                    <strong>D</strong> Judul,<br>
+                    <strong>E</strong> Deskripsi,<br>
+                    <strong>F</strong> Pengarang,<br>
+                    <strong>G</strong> Penerbit,<br>
+                    <strong>H</strong> Tahun,<br>
+                    <strong>I</strong> Stok,<br>
+                    <strong>J</strong> No Rak.
                 </p>
 
                 <form method="POST" action="{{ route('admin.import.books') }}" enctype="multipart/form-data">
@@ -281,6 +304,7 @@
                             <small class="text-danger d-block mt-1">{{ $message }}</small>
                         @enderror
                     </div>
+
                     <button class="btn btn-primary btn-pill" type="submit">
                         Import Buku
                     </button>
@@ -297,12 +321,16 @@
                 </div>
                 <span class="import-card-tag">Sheet Anggota</span>
             </div>
+
             <div class="import-card-body">
                 <p class="import-note">
-                    Kolom disarankan:
-                    <strong>A</strong> NIS, <strong>B</strong> Nama,
-                    <strong>C</strong> Kelas, <strong>D</strong> Jenis Kelamin,
-                    <strong>E</strong> No. HP, <strong>F</strong> Alamat.
+                    Kolom disarankan:<br>
+                    <strong>A</strong> NIS,<br>
+                    <strong>B</strong> Nama,<br>
+                    <strong>C</strong> Kelas,<br>
+                    <strong>D</strong> Jenis Kelamin,<br>
+                    <strong>E</strong> No. HP,<br>
+                    <strong>F</strong> Alamat.
                 </p>
 
                 <form method="POST" action="{{ route('admin.import.members') }}" enctype="multipart/form-data">
@@ -313,6 +341,7 @@
                             <small class="text-danger d-block mt-1">{{ $message }}</small>
                         @enderror
                     </div>
+
                     <button class="btn btn-success btn-pill" type="submit">
                         Import Anggota
                     </button>
@@ -348,6 +377,7 @@
                                     <span class="badge-type badge-members">Anggota</span>
                                 @endif
                             </td>
+
                             <td>
                                 <div>
                                     <strong>{{ $log->file_name }}</strong>
@@ -357,8 +387,10 @@
                                     {{ $log->imported_at?->format('d M Y H:i') }}
                                 </small>
                             </td>
+
                             <td class="text-end" style="width: 150px;">
-                                <form method="POST" action="{{ route('admin.import.logs.destroy', $log->id) }}"
+                                <form method="POST"
+                                      action="{{ route('admin.import.logs.destroy', $log->id) }}"
                                       onsubmit="return confirm('Hapus batch ini dan seluruh data yang dibuat dari Excel ini?');">
                                     @csrf
                                     @method('DELETE')

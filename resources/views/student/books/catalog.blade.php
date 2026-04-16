@@ -73,7 +73,7 @@
     }
 
     .catalog-search-row input[type="text"] {
-        max-width: 260px;
+        max-width: 360px;
         border-radius: 999px;
         font-size: .85rem;
     }
@@ -84,7 +84,6 @@
         font-size: .85rem;
     }
 
-    /* TABEL */
     .catalog-table thead th {
         background: #020617;
         color: #f9fafb;
@@ -92,6 +91,7 @@
         text-transform: uppercase;
         letter-spacing: .06em;
         border-bottom: none;
+        white-space: nowrap;
     }
 
     .catalog-table thead th:first-child { border-top-left-radius: 10px; }
@@ -148,9 +148,6 @@
     }
     .catalog-footer-link a:hover { text-decoration: underline; }
 
-    /* ===========================
-       MODAL – MODERN GLASS (NEW)
-       =========================== */
     .modal-modern .modal-dialog { max-width: 820px; }
     .modal-modern .modal-content {
         border-radius: 22px;
@@ -433,7 +430,7 @@
                     type="text"
                     name="q"
                     class="form-control form-control-sm"
-                    placeholder="Cari judul / pengarang / penerbit / tahun"
+                    placeholder="Cari nama buku / ID buku / pengarang / penerbit"
                     value="{{ $q }}"
                 >
                 <button class="btn btn-sm btn-primary" type="submit">Cari</button>
@@ -459,6 +456,7 @@
                     <th>Pengarang</th>
                     <th>Penerbit</th>
                     <th style="width:90px;">Tahun</th>
+                    <th style="width:95px;">No Rak</th>
                     <th style="width:110px;">Status</th>
                     <th style="width:90px;">Stok</th>
                     <th style="width:120px;">Aksi</th>
@@ -468,7 +466,7 @@
                 @forelse ($books as $book)
                     @php $tersedia = $book->stock > 0; @endphp
                     <tr>
-                        <td>{{ $book->book_code ?? '-' }}</td>
+                        <td>{{ !empty($book->book_code) ? $book->book_code : ('BK-' . $book->id) }}</td>
 
                         <td>
                             @if($book->cover)
@@ -493,6 +491,7 @@
                         <td>{{ $book->author ?: '-' }}</td>
                         <td>{{ $book->publisher ?: '-' }}</td>
                         <td>{{ $book->year ?: '-' }}</td>
+                        <td>{{ $book->no_rak ?: '-' }}</td>
 
                         <td>
                             @if ($tersedia)
@@ -525,7 +524,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-3">
+                        <td colspan="10" class="text-center text-muted py-3">
                             Belum ada data buku yang tercatat.
                         </td>
                     </tr>
@@ -728,7 +727,6 @@
             imgEl.src = '';
         }
 
-        // reset input tiap buka modal (biar gak nyangkut dari sebelumnya)
         resetBorrowForm();
     });
 
@@ -759,7 +757,6 @@
                 return;
             }
 
-            // biar ga spam api
             if (nis.length < 6) {
                 clearStudent();
                 setNisStatus('bad', 'NIS terlalu pendek.');
@@ -794,7 +791,6 @@
             }, 350);
         });
 
-        // kalau user isi manual nama/kelas, tombol ikut aktif
         [nameInput, classInput].forEach(el => {
             if(!el) return;
             el.addEventListener('input', () => {

@@ -46,9 +46,10 @@ class StudentBorrowController extends Controller
             return back()->withInput()->with('error', 'NIS tidak terdaftar. Hubungi admin.');
         }
 
-        // ✅ Maksimal 3 buku aktif (Diajukan + Dipinjam)
-        $activeCount = Borrowing::where('member_id', $member->id)
-            ->whereIn('status', ['Diajukan', 'Dipinjam'])
+        // Maksimal 3 buku aktif (Diajukan + Dipinjam + Terlambat, Kembali tidak dihitung)
+        // FIX: hitung berdasarkan student_nis agar data lama / input admin tetap ikut terhitung
+        $activeCount = Borrowing::where('student_nis', $member->nis)
+            ->whereIn('status', ['Diajukan', 'Dipinjam', 'Terlambat'])
             ->whereNull('return_date')
             ->count();
 
@@ -56,10 +57,11 @@ class StudentBorrowController extends Controller
             return back()->withInput()->with('error', 'Maksimal 3 buku aktif. Kembalikan buku dulu.');
         }
 
-        // cegah dobel ajukan buku yang sama (Diajukan / Dipinjam)
-        $already = Borrowing::where('member_id', $member->id)
+        // cegah dobel ajukan buku yang sama
+        // FIX: cek berdasarkan student_nis agar konsisten dengan data riwayat siswa
+        $already = Borrowing::where('student_nis', $member->nis)
             ->where('book_id', $book->id)
-            ->whereIn('status', ['Diajukan', 'Dipinjam'])
+            ->whereIn('status', ['Diajukan', 'Dipinjam', 'Terlambat'])
             ->whereNull('return_date')
             ->exists();
 
@@ -83,15 +85,11 @@ class StudentBorrowController extends Controller
             'duration'      => (int) $data['days'],
             'status'        => 'Diajukan',
 
-            // ✅ masa pengajuan 2 hari
-            'expired_at'    => $expire,
-
-            // ✅ max perpanjang 2x
+            'expired_at'       => $expire,
             'extend_count'     => 0,
             'last_extended_at' => null,
         ];
 
-        // ✅ kalau tabel kamu juga punya kolom expires_at, isi juga biar konsisten
         if (Schema::hasColumn('borrowings', 'expires_at')) {
             $payload['expires_at'] = $expire;
         }
@@ -112,6 +110,14 @@ class StudentBorrowController extends Controller
         $borrowings = collect();
 
         if ($nis) {
+            // otomatis ubah Dipinjam yang sudah lewat jatuh tempo jadi Terlambat
+            Borrowing::where('student_nis', $nis)
+                ->where('status', 'Dipinjam')
+                ->whereNotNull('due_date')
+                ->whereNull('return_date')
+                ->whereDate('due_date', '<', today())
+                ->update(['status' => 'Terlambat']);
+
             $borrowings = Borrowing::where('student_nis', $nis)
                 ->with('book')
                 ->orderByDesc('created_at')
@@ -131,7 +137,7 @@ class StudentBorrowController extends Controller
     }
 
     /**
-     * ✅ Alias kalau route kamu manggil extendRequest (biar aman tanpa ubah web.php)
+     * Alias kalau route kamu manggil extendRequest
      */
     public function extendRequest(Request $request, Borrowing $borrowing)
     {
@@ -139,7 +145,7 @@ class StudentBorrowController extends Controller
     }
 
     /**
-     * ✅ SISWA PERPANJANG PENGAJUAN (MAX 2x)
+     * SISWA PERPANJANG PENGAJUAN / PEMINJAMAN (MAX 2x, +2 hari)
      * Route: POST /pengajuan/{borrowing}/perpanjang
      */
     public function extend(Request $request, Borrowing $borrowing)
@@ -148,49 +154,81 @@ class StudentBorrowController extends Controller
             'nis' => 'required|string|max:50',
         ]);
 
-        // keamanan: NIS harus sama dengan pemilik pengajuan
+        // keamanan: NIS harus sama dengan pemilik data
         if (trim((string) $data['nis']) !== trim((string) $borrowing->student_nis)) {
-            return back()->with('error', 'Akses ditolak. Ini bukan pengajuan milik kamu.');
+            return back()->with('error', 'Akses ditolak. Ini bukan data milik kamu.');
         }
 
-        // hanya boleh extend kalau masih Diajukan
-        if ($borrowing->status !== 'Diajukan') {
-            return back()->with('error', 'Hanya pengajuan status Diajukan yang bisa diperpanjang.');
+        // kalau sudah lewat jatuh tempo, otomatis ubah jadi Terlambat
+        if ($borrowing->status === 'Dipinjam' && !empty($borrowing->due_date)) {
+            $dueDateCheck = Carbon::parse($borrowing->due_date);
+
+            if (now()->gt($dueDateCheck->copy()->endOfDay())) {
+                $borrowing->status = 'Terlambat';
+                $borrowing->save();
+
+                return back()->with('error', 'Peminjaman sudah terlambat dan tidak bisa diperpanjang.');
+            }
         }
 
-        // ✅ ambil tanggal kadaluarsa dari expired_at / expires_at (mana yang ada)
-        $rawExpire = $borrowing->expired_at ?? $borrowing->expires_at ?? null;
-
-        // kalau tidak ada sama sekali, anggap dari sekarang
-        $expireDate = $rawExpire ? Carbon::parse($rawExpire) : now();
-
-        // kalau sudah expired
-        if ($expireDate->isPast()) {
-            return back()->with('error', 'Pengajuan sudah kadaluarsa. Silakan ajukan ulang.');
+        // hanya Diajukan / Dipinjam yang boleh diperpanjang
+        if (!in_array($borrowing->status, ['Diajukan', 'Dipinjam'], true)) {
+            return back()->with('error', 'Hanya status Diajukan atau Dipinjam yang bisa diperpanjang.');
         }
 
         $extendCount = (int) ($borrowing->extend_count ?? 0);
 
-        // max 2x
         if ($extendCount >= 2) {
-            return back()->with('error', 'Batas perpanjang pengajuan sudah maksimal (2x).');
+            return back()->with('error', 'Batas perpanjangan sudah maksimal (2x).');
         }
 
-        // ✅ tambah 2 hari dari expire yang sekarang
-        $newExpire = $expireDate->copy()->addDays(2);
+        if ($borrowing->status === 'Diajukan') {
+            $rawExpire = $borrowing->expired_at ?? $borrowing->expires_at ?? null;
+            $expireDate = $rawExpire ? Carbon::parse($rawExpire) : now();
 
-        // ✅ update expired_at
-        $borrowing->expired_at = $newExpire;
+            // masih berlaku sampai akhir hari
+            if (now()->gt($expireDate->copy()->endOfDay())) {
+                return back()->with('error', 'Pengajuan sudah kadaluarsa. Silakan ajukan ulang.');
+            }
 
-        // ✅ kalau kolom expires_at ada, update juga
-        if (array_key_exists('expires_at', $borrowing->getAttributes())) {
-            $borrowing->expires_at = $newExpire;
+            $newExpire = $expireDate->copy()->addDays(2);
+
+            $borrowing->expired_at = $newExpire;
+
+            if (array_key_exists('expires_at', $borrowing->getAttributes())) {
+                $borrowing->expires_at = $newExpire;
+            }
+
+            $borrowing->extend_count = $extendCount + 1;
+            $borrowing->last_extended_at = now();
+            $borrowing->save();
+
+            return back()->with('success', 'Pengajuan berhasil diperpanjang (+2 hari).');
         }
 
-        $borrowing->extend_count = $extendCount + 1;
-        $borrowing->last_extended_at = now();
-        $borrowing->save();
+        if ($borrowing->status === 'Dipinjam') {
+            if (!$borrowing->due_date) {
+                return back()->with('error', 'Tanggal jatuh tempo tidak tersedia.');
+            }
 
-        return back()->with('success', 'Pengajuan berhasil diperpanjang (+2 hari).');
+            $dueDate = Carbon::parse($borrowing->due_date);
+
+            // masih berlaku sampai akhir hari jatuh tempo
+            if (now()->gt($dueDate->copy()->endOfDay())) {
+                $borrowing->status = 'Terlambat';
+                $borrowing->save();
+
+                return back()->with('error', 'Peminjaman sudah terlambat dan tidak bisa diperpanjang.');
+            }
+
+            $borrowing->due_date = $dueDate->copy()->addDays(2);
+            $borrowing->extend_count = $extendCount + 1;
+            $borrowing->last_extended_at = now();
+            $borrowing->save();
+
+            return back()->with('success', 'Peminjaman berhasil diperpanjang (+2 hari). Jatuh tempo diperbarui.');
+        }
+
+        return back()->with('error', 'Perpanjangan tidak dapat diproses.');
     }
 }

@@ -154,6 +154,71 @@
         color:var(--text-muted);
     }
 
+    .members-toolbar {
+        padding: 14px 20px 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .members-search-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .members-search-input {
+        min-width: 320px;
+        max-width: 420px;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        background: #fff;
+        padding: .6rem 1rem;
+        font-size: .88rem;
+        color: var(--text-main);
+        outline: none;
+        box-shadow: 0 4px 14px rgba(15,23,42,.04);
+    }
+
+    .members-search-input:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    }
+
+    .btn-search {
+        border: none;
+        border-radius: 999px;
+        padding: .58rem 1.1rem;
+        font-size: .85rem;
+        font-weight: 600;
+        background: linear-gradient(135deg,#4f46e5,#06b6d4);
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .btn-search:hover {
+        filter: brightness(1.03);
+    }
+
+    .btn-reset-search {
+        border-radius: 999px;
+        padding: .56rem 1rem;
+        font-size: .84rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid var(--border-soft);
+        background: #fff;
+        color: #374151;
+    }
+
+    .btn-reset-search:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
     /* TABLE */
     .members-table {
         margin-bottom:0;
@@ -249,11 +314,21 @@
         .member-hero-actions {
             justify-content:flex-start;
         }
+        .members-toolbar {
+            align-items: stretch;
+        }
+        .members-search-form {
+            width: 100%;
+        }
+        .members-search-input {
+            min-width: 100%;
+            max-width: 100%;
+        }
     }
 </style>
 
 @php
-    $totalMembers = $members->count();
+    $totalMembers = method_exists($members, 'total') ? $members->total() : $members->count();
 @endphp
 
 <div class="member-page-wrapper">
@@ -308,6 +383,30 @@
             <div class="members-total">
                 Total <strong>{{ $totalMembers }}</strong> anggota terdaftar.
             </div>
+        </div>
+
+        {{-- TOOLBAR PENCARIAN --}}
+        <div class="members-toolbar">
+            <form method="GET" action="{{ route('members.index') }}" class="members-search-form">
+                <input
+                    type="text"
+                    name="q"
+                    class="members-search-input"
+                    placeholder="Cari berdasarkan NIS, nama, atau kelas..."
+                    value="{{ request('q') }}"
+                >
+                <button type="submit" class="btn-search">Cari</button>
+
+                @if(request('q'))
+                    <a href="{{ route('members.index') }}" class="btn-reset-search">Reset</a>
+                @endif
+            </form>
+
+            @if(request('q'))
+                <div class="members-total">
+                    Hasil pencarian untuk: <strong>{{ request('q') }}</strong>
+                </div>
+            @endif
         </div>
 
         <div class="table-responsive">

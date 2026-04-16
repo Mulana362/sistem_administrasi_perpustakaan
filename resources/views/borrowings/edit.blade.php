@@ -1,7 +1,56 @@
-
 @extends('layouts.app')
 
 @section('content')
+@php
+    $borrowDateRaw = \Carbon\Carbon::parse($borrowing->borrow_date);
+
+    // Ambil durasi pengajuan siswa dari field yang mungkin sudah ada di data borrowing.
+    // Prioritas: old input -> requested_duration / loan_duration / duration_days / lama_pinjam / duration
+    $requestedDuration = (int) (
+        old('requested_duration')
+        ?? $borrowing->requested_duration
+        ?? $borrowing->loan_duration
+        ?? $borrowing->duration_days
+        ?? $borrowing->lama_pinjam
+        ?? $borrowing->duration
+        ?? 1
+    );
+
+    if ($requestedDuration < 1) {
+        $requestedDuration = 1;
+    }
+
+    $storedDueDateRaw = !empty($borrowing->due_date)
+        ? \Carbon\Carbon::parse($borrowing->due_date)
+        : null;
+
+    // Kalau due_date belum benar / masih sama dengan tanggal pinjam padahal ada durasi > 1,
+    // otomatis hitung ulang dari tanggal pinjam + durasi pengajuan siswa.
+    $effectiveDueDateRaw = $storedDueDateRaw
+        ? $storedDueDateRaw->copy()
+        : $borrowDateRaw->copy()->addDays($requestedDuration);
+
+    if ($requestedDuration > 1 && $effectiveDueDateRaw->isSameDay($borrowDateRaw)) {
+        $effectiveDueDateRaw = $borrowDateRaw->copy()->addDays($requestedDuration);
+    }
+
+    $borrowDateValue = old('borrow_date', $borrowDateRaw->format('Y-m-d'));
+    $dueDateValue = old('due_date', $effectiveDueDateRaw->format('Y-m-d'));
+
+    $borrowDate = \Carbon\Carbon::parse($borrowDateValue)
+                    ->locale('id')
+                    ->translatedFormat('d F Y');
+
+    $dueDate = \Carbon\Carbon::parse($dueDateValue)
+                    ->locale('id')
+                    ->translatedFormat('d F Y');
+
+    $today = now()->locale('id')->translatedFormat('d F Y');
+
+    $bookTitle = optional($borrowing->book)->title ?? 'Buku sudah dihapus';
+    $bookAuthor = optional($borrowing->book)->author ?? '-';
+@endphp
+
 <style>
     body {
         background: #f3f5ff;
@@ -226,7 +275,7 @@
     }
 </style>
 
-<div class="edit-borrow-wrapper">
+<div class="edit-borrow-wrapper" data-requested-duration="{{ $requestedDuration }}">
     {{-- KOLOM KIRI: FORM PERUBAHAN (tidak ikut tercetak) --}}
     <div class="edit-card no-print">
         <div class="edit-title">Form Perubahan</div>
@@ -247,6 +296,9 @@
         <form action="{{ route('borrowings.update', $borrowing->id) }}" method="POST">
             @csrf
             @method('PUT')
+
+            {{-- hidden supaya durasi pengajuan siswa tetap ikut terkirim --}}
+            <input type="hidden" name="requested_duration" value="{{ $requestedDuration }}">
 
             <label class="edit-label">Nama Siswa</label>
             <input type="text"
@@ -303,7 +355,7 @@
                            id="tanggal_pinjam"
                            name="borrow_date"
                            class="edit-input"
-                           value="{{ old('borrow_date', \Carbon\Carbon::parse($borrowing->borrow_date)->format('Y-m-d')) }}"
+                           value="{{ $borrowDateValue }}"
                            required>
                     @error('borrow_date')
                         <div class="text-error">{{ $message }}</div>
@@ -315,7 +367,7 @@
                            id="tanggal_jatuh_tempo"
                            name="due_date"
                            class="edit-input"
-                           value="{{ old('due_date', \Carbon\Carbon::parse($borrowing->due_date)->format('Y-m-d')) }}"
+                           value="{{ $dueDateValue }}"
                            required>
                     @error('due_date')
                         <div class="text-error">{{ $message }}</div>
@@ -356,16 +408,6 @@
 
     {{-- KOLOM KANAN: SLIP PEMINJAMAN (INI YANG DICETAK) --}}
     <div class="edit-card slip-print-only">
-        @php
-            $borrowDate = \Carbon\Carbon::parse($borrowing->borrow_date)
-                            ->locale('id')
-                            ->translatedFormat('d F Y');
-            $dueDate    = \Carbon\Carbon::parse($borrowing->due_date)
-                            ->locale('id')
-                            ->translatedFormat('d F Y');
-            $today      = now()->locale('id')->translatedFormat('d F Y');
-        @endphp
-
         <div class="slip-header-title">PERPUSTAKAAN SMPN 1 BANDUNG</div>
         <div class="slip-header-sub">SLIP PEMINJAMAN BUKU</div>
 
@@ -384,19 +426,19 @@
             </tr>
             <tr>
                 <td>Judul Buku</td><td>:</td>
-                <td>{{ $borrowing->book->title }}</td>
+                <td>{{ $bookTitle }}</td>
             </tr>
             <tr>
                 <td>Pengarang</td><td>:</td>
-                <td>{{ $borrowing->book->author }}</td>
+                <td>{{ $bookAuthor }}</td>
             </tr>
             <tr>
                 <td>Tanggal Pinjam</td><td>:</td>
-                <td>{{ $borrowDate }}</td>
+                <td id="slipBorrowDate">{{ $borrowDate }}</td>
             </tr>
             <tr>
                 <td>Tgl Jatuh Tempo</td><td>:</td>
-                <td>{{ $dueDate }}</td>
+                <td id="slipDueDate">{{ $dueDate }}</td>
             </tr>
             <tr>
                 <td>Status</td><td>:</td>
@@ -404,12 +446,12 @@
             </tr>
         </table>
 
-        <!-- KETENTUAN RAPI -->
         <div class="slip-section-title">Ketentuan Peminjaman:</div>
         <ul class="slip-list">
             <li>Buku harus dijaga dengan baik dan tidak boleh dicoret, dilipat berlebihan, atau dirusak.</li>
             <li>Buku wajib dikembalikan paling lambat pada tanggal jatuh tempo yang tercantum.</li>
-            <li>Keterlambatan pengembalian dikenakan denda berdasarkan aturan perpustakaan sekolah.</li>
+            <li>Masa peminjaman buku dapat diperpanjang Maksimal 2X sesuai ketentuan perpustakaan yang berlaku.</li>
+            <li>Keterlambatan pengembalian dikenakan denda Rp 2.000 / hari.</li>
             <li>Buku yang hilang atau rusak berat wajib diganti dengan buku yang sama atau setara.</li>
             <li>Slip ini wajib dibawa dan ditunjukkan kepada petugas saat pengembalian buku.</li>
         </ul>
@@ -433,10 +475,55 @@
 </div>
 
 <script>
-    // tombol cetak slip -> dialog print (bisa pilih Save as PDF)
-    document.getElementById('btnPrintSlip')?.addEventListener('click', function () {
-        window.print();
-    });
+    (function () {
+        const wrapper = document.querySelector('.edit-borrow-wrapper');
+        const borrowDateInput = document.getElementById('tanggal_pinjam');
+        const dueDateInput = document.getElementById('tanggal_jatuh_tempo');
+        const slipBorrowDate = document.getElementById('slipBorrowDate');
+        const slipDueDate = document.getElementById('slipDueDate');
+        const durationDays = Math.max(parseInt(wrapper?.dataset?.requestedDuration || '1', 10), 1);
+
+        function formatTanggalIndonesia(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString + 'T00:00:00');
+            return new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }).format(date);
+        }
+
+        function hitungJatuhTempo() {
+            if (!borrowDateInput || !dueDateInput || !borrowDateInput.value) return;
+
+            const borrowDate = new Date(borrowDateInput.value + 'T00:00:00');
+            const dueDate = new Date(borrowDate);
+
+            dueDate.setDate(dueDate.getDate() + durationDays);
+
+            const yyyy = dueDate.getFullYear();
+            const mm = String(dueDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(dueDate.getDate()).padStart(2, '0');
+
+            dueDateInput.value = `${yyyy}-${mm}-${dd}`;
+
+            if (slipBorrowDate) {
+                slipBorrowDate.textContent = formatTanggalIndonesia(borrowDateInput.value);
+            }
+
+            if (slipDueDate) {
+                slipDueDate.textContent = formatTanggalIndonesia(dueDateInput.value);
+            }
+        }
+
+        hitungJatuhTempo();
+
+        borrowDateInput?.addEventListener('change', hitungJatuhTempo);
+
+        document.getElementById('btnPrintSlip')?.addEventListener('click', function () {
+            hitungJatuhTempo();
+            window.print();
+        });
+    })();
 </script>
 @endsection
-

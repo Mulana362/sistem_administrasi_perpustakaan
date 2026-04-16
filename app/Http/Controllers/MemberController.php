@@ -12,12 +12,22 @@ class MemberController extends Controller
     | TAMPILKAN SEMUA ANGGOTA
     |--------------------------------------------------------------------------
     */
-    public function index()
+    public function index(Request $request)
     {
-        // kalau mau paginate tinggal ganti ->paginate(10)
-        $members = Member::orderBy('name')->get();
+        $q = trim((string) $request->q);
 
-        return view('members.index', compact('members'));
+        $members = Member::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('nis', 'like', "%{$q}%")
+                        ->orWhere('name', 'like', "%{$q}%")
+                        ->orWhere('class', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('members.index', compact('members', 'q'));
     }
 
     /*

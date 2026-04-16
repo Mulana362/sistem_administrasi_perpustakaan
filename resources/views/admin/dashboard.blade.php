@@ -7,24 +7,36 @@
     use App\Models\Book;
     use App\Models\Borrowing;
     use App\Models\Visitor;
+    use Illuminate\Support\Facades\Schema;
+    use Carbon\Carbon;
 
-    // total koleksi mengikuti jumlah stok buku
+    $today = Carbon::now()->timezone(config('app.timezone', 'Asia/Jakarta'))->toDateString();
+
     $totalBooks        = Book::sum('stock');
     $activeBorrowings  = Borrowing::where('status', 'Dipinjam')->count();
-    $overdueBorrowings = Borrowing::where('status', 'Dipinjam')
-                            ->whereDate('due_date', '<', now())
-                            ->count();
-    $todayVisitors     = Visitor::whereDate('created_at', today())->count();
-
-    // hari ini semua transaksi borrowing (termasuk diajukan)
-    $todayBorrowings   = Borrowing::whereDate('created_at', today())->count();
-
-    // ✅ GANTI: Total Pengajuan (status Diajukan)
+    $overdueBorrowings = Borrowing::where('status', 'Terlambat')->count();
+    $todayBorrowings   = Borrowing::whereDate('created_at', $today)->count();
     $totalPengajuan    = Borrowing::where('status', 'Diajukan')->count();
+
+    $visitorTable = (new Visitor)->getTable();
+
+    if (Schema::hasColumn($visitorTable, 'visit_date')) {
+        $todayVisitors = Visitor::whereDate('visit_date', $today)->count();
+    } elseif (Schema::hasColumn($visitorTable, 'date')) {
+        $todayVisitors = Visitor::whereDate('date', $today)->count();
+    } elseif (Schema::hasColumn($visitorTable, 'tanggal')) {
+        $todayVisitors = Visitor::whereDate('tanggal', $today)->count();
+    } else {
+        $todayVisitors = Visitor::whereDate('created_at', $today)->count();
+    }
+
+    $visitPath = route('visit.register', [], false);
+    $baseUrl   = rtrim(config('app.url') ?: request()->getSchemeAndHttpHost(), '/');
+    $visitUrl  = $baseUrl . $visitPath;
+    $qrUrl     = 'https://quickchart.io/qr?text=' . urlencode($visitUrl) . '&size=320';
 @endphp
 
 <style>
-    /* ===== BACKGROUND HALAMAN (dibikin adem & modern) ===== */
     body {
         background:
             radial-gradient(circle at top left, #dbeafe 0, #eff6ff 28%, transparent 55%),
@@ -36,7 +48,6 @@
         margin: 24px auto 40px;
     }
 
-    /* HEADER */
     .admin-hero {
         background: linear-gradient(135deg, #1d4ed8, #2563eb);
         border-radius: 18px;
@@ -116,16 +127,15 @@
         opacity: .9;
     }
 
-    /* STATISTIK */
     .stat-row {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0,1fr)); /* ✅ tetap 5 */
+        grid-template-columns: repeat(5, minmax(0,1fr));
         gap: 12px;
         margin-bottom: 22px;
     }
 
     @media (max-width: 992px){
-        .stat-row{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .stat-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
 
     .stat-card {
@@ -156,7 +166,6 @@
         color: #9ca3af;
     }
 
-    /* GRID MENU + QR */
     .main-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
@@ -165,7 +174,7 @@
     }
 
     @media (max-width: 992px){
-        .main-grid{ grid-template-columns: 1fr; }
+        .main-grid { grid-template-columns: 1fr; }
     }
 
     .card-box {
@@ -196,7 +205,6 @@
         margin-bottom: 14px;
     }
 
-    /* MENU CEPAT WARNA-WARNI */
     .quick-menu {
         display: grid;
         gap: 10px;
@@ -270,7 +278,6 @@
         color: #b91c1c;
     }
 
-    /* QR + RINGKASAN */
     .qr-box {
         display: flex;
         flex-direction: column;
@@ -281,14 +288,7 @@
         background: #f9fafb;
         border-radius: 16px;
         border: 1px dashed #d1d5db;
-        padding: 14px;
-        text-align: center;
-    }
-
-    .qr-inner img {
-        width: 210px;
-        height: 210px;
-        object-fit: contain;
+        padding: 18px;
     }
 
     .small-muted {
@@ -332,11 +332,124 @@
         font-size: .8rem;
         color: #6b7280;
     }
+
+    .voice-toggle-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 12px;
+    }
+
+    .voice-toggle-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(37,99,235,.22);
+    }
+
+    .qr-visit-shell {
+        display: grid;
+        gap: 18px;
+        justify-items: center;
+    }
+
+    .qr-visit-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        width: fit-content;
+        padding: .46rem .9rem;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .qr-visit-code-wrap {
+        width: 100%;
+        max-width: 320px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 22px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 14px 30px rgba(15,23,42,0.08);
+    }
+
+    .qr-visit-code {
+        width: 100%;
+        max-width: 260px;
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
+        display: block;
+        background: #fff;
+    }
+
+    .qr-step-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 10px;
+    }
+
+    .qr-step-item {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .qr-step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .8rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .qr-step-title {
+        font-size: .84rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .qr-step-text {
+        font-size: .78rem;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .qr-step-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .qr-visit-code-wrap {
+            max-width: 280px;
+        }
+
+        .qr-visit-code {
+            max-width: 220px;
+        }
+    }
 </style>
 
 <div class="admin-wrapper">
 
-    {{-- HEADER --}}
     <div class="admin-hero">
         <div class="hero-left">
             <div class="hero-icon">📚</div>
@@ -355,7 +468,6 @@
         </div>
     </div>
 
-    {{-- STATISTIK --}}
     <div class="stat-row">
         <div class="stat-card">
             <div class="stat-label">Total Koleksi (Stok Buku)</div>
@@ -381,7 +493,6 @@
             <div class="stat-note">Jumlah tamu yang tercatat hari ini.</div>
         </div>
 
-        {{-- ✅ GANTI: TOTAL PENGAJUAN (bukan kadaluarsa) --}}
         <div class="stat-card">
             <div class="stat-label">Total Pengajuan</div>
             <div class="stat-value" style="color:#2563eb;">{{ $totalPengajuan }}</div>
@@ -391,7 +502,6 @@
 
     <div class="main-grid">
 
-        {{-- KIRI: MENU CEPAT --}}
         <div class="card-box">
             <div class="section-title">
                 <span class="emoji">📌</span>
@@ -403,7 +513,6 @@
 
             <div class="quick-menu">
 
-                {{-- Input Kunjungan (Form Terpisah) --}}
                 <a href="{{ route('visit.register') }}" class="quick-btn quick-input-visit">
                     <span class="left">
                         <span class="emoji">📝</span>
@@ -414,7 +523,6 @@
                     </span>
                 </a>
 
-                {{-- ✅ GANTI TEXT: Pengajuan, Peminjaman & Pengembalian --}}
                 <a href="{{ route('borrowings.index') }}" class="quick-btn quick-borrow">
                     <span class="left">
                         <span class="emoji">🔄</span>
@@ -425,7 +533,6 @@
                     </span>
                 </a>
 
-                {{-- Kartu Anggota --}}
                 <a href="{{ route('members.index') }}" class="quick-btn quick-members">
                     <span class="left">
                         <span class="emoji">🎫</span>
@@ -436,7 +543,6 @@
                     </span>
                 </a>
 
-                {{-- Rekap Kunjungan --}}
                 <a href="{{ route('visitors.index') }}" class="quick-btn quick-visitors">
                     <span class="left">
                         <span class="emoji">📊</span>
@@ -447,7 +553,6 @@
                     </span>
                 </a>
 
-                {{-- Buku --}}
                 <a href="{{ route('books.index') }}" class="quick-btn quick-books">
                     <span class="left">
                         <span class="emoji">📖</span>
@@ -458,7 +563,6 @@
                     </span>
                 </a>
 
-                {{-- Logout --}}
                 <a href="{{ route('admin.logout') }}" class="quick-btn quick-logout">
                     <span class="left">
                         <span class="emoji">🚪</span>
@@ -472,29 +576,73 @@
             </div>
         </div>
 
-        {{-- KANAN: QR CODE + RINGKASAN --}}
         <div class="card-box">
             <div class="qr-box">
 
-                {{-- QR Kunjungan --}}
                 <div>
                     <div class="section-title" style="margin-bottom:6px;">
                         <span class="emoji">📱</span>
                         <span>QR Kunjungan Perpustakaan</span>
                     </div>
                     <div class="section-sub" style="margin-bottom:10px;">
-                        Tempel QR di meja perpustakaan. Siswa cukup scan dari HP, lalu mengisi form di halaman <b>/kunjungan</b>.
+                        Siswa bisa scan QR ini lewat HP untuk langsung membuka form kunjungan perpustakaan.
                     </div>
 
                     <div class="qr-inner">
-                        <img src="{{ asset('images/qr-kunjungan.jpg') }}" alt="QR Kunjungan Perpustakaan">
+                        <div class="qr-visit-shell">
+                            <div class="qr-visit-badge">⚡ Akses cepat dari HP siswa</div>
+
+                            <div class="qr-visit-code-wrap">
+                                <img
+                                    class="qr-visit-code"
+                                    src="{{ $qrUrl }}"
+                                    alt="QR Kunjungan Perpustakaan"
+                                >
+                            </div>
+
+                            <div class="qr-step-grid">
+                                <div class="qr-step-item">
+                                    <div class="qr-step-number">1</div>
+                                    <div class="qr-step-title">Buka kamera HP</div>
+                                    <div class="qr-step-text">
+                                        Siswa cukup membuka kamera atau aplikasi scan QR di ponsel.
+                                    </div>
+                                </div>
+
+                                <div class="qr-step-item">
+                                    <div class="qr-step-number">2</div>
+                                    <div class="qr-step-title">Scan QR kunjungan</div>
+                                    <div class="qr-step-text">
+                                        Arahkan kamera ke QR agar link form kunjungan muncul otomatis.
+                                    </div>
+                                </div>
+
+                                <div class="qr-step-item">
+                                    <div class="qr-step-number">3</div>
+                                    <div class="qr-step-title">Isi form kunjungan</div>
+                                    <div class="qr-step-text">
+                                        Setelah terbuka, siswa tinggal isi data kunjungan langsung dari HP.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="voice-toggle-wrap" style="gap:8px; flex-wrap:wrap;">
+                        <button type="button" id="testBreakVoice" class="voice-toggle-btn">
+                            🔔 Test Istirahat
+                        </button>
+
+                        <button type="button" id="testCloseVoice" class="voice-toggle-btn">
+                            🔔 Test Tutup
+                        </button>
+                    </div>
+
                     <div class="small-muted mt-2 text-center">
-                        Pastikan koneksi WiFi sekolah tersedia agar siswa bisa mengakses halaman kunjungan.
+                        Pengumuman otomatis akan diputar saat jam istirahat dan menjelang tutup perpustakaan.
                     </div>
                 </div>
 
-                {{-- Ringkasan Hari Ini --}}
                 <div>
                     <div class="section-title" style="margin-top:14px; font-size:1rem;">
                         <span class="emoji">📆</span>
@@ -534,7 +682,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                 </div>
@@ -545,4 +692,108 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const testBreakBtn = document.getElementById('testBreakVoice');
+    const testCloseBtn = document.getElementById('testCloseVoice');
+
+    const storageKeyLastBreakDate = 'library_voice_break_last_date';
+    const storageKeyLastCloseDate = 'library_voice_close_last_date';
+
+    const breakMessageId = 'Diberitahukan kepada seluruh pengunjung perpustakaan bahwa saat ini Perpustakaan SMP Negeri 1 Bandung memasuki jam istirahat. Kami mengimbau seluruh siswa untuk mengembalikan buku yang telah dibaca ke tempatnya dengan rapi. Layanan akan dibuka kembali setelah waktu istirahat berakhir. Terima kasih atas perhatian dan kerja samanya.';
+
+    const closeMessageId = 'Perhatian kepada seluruh pengunjung perpustakaan. Layanan Perpustakaan SMP Negeri 1 Bandung akan segera berakhir pada pukul 15.00. Silakan menyelesaikan kegiatan membaca, peminjaman, dan pengembalian buku. Terima kasih.';
+
+    function speakText(text) {
+        if (!('speechSynthesis' in window)) {
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        const voices = window.speechSynthesis.getVoices();
+        const matchedVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('id'));
+        if (matchedVoice) {
+            utterance.voice = matchedVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function playStationChimeThenSpeak(text) {
+        const audio = new Audio('/audio/chime-station.mp3');
+        audio.volume = 1;
+
+        audio.onended = function () {
+            speakText(text);
+        };
+
+        audio.onerror = function () {
+            speakText(text);
+        };
+
+        audio.play().catch(function () {
+            speakText(text);
+        });
+    }
+
+    function todayKey() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function checkAndPlayReminder() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const today = todayKey();
+
+        if (hours === 12 && minutes >= 0 && minutes <= 4) {
+            if (localStorage.getItem(storageKeyLastBreakDate) !== today) {
+                localStorage.setItem(storageKeyLastBreakDate, today);
+                playStationChimeThenSpeak(breakMessageId);
+            }
+        }
+
+        if (hours === 14 && minutes >= 55 && minutes <= 59) {
+            if (localStorage.getItem(storageKeyLastCloseDate) !== today) {
+                localStorage.setItem(storageKeyLastCloseDate, today);
+                playStationChimeThenSpeak(closeMessageId);
+            }
+        }
+    }
+
+    if (testBreakBtn) {
+        testBreakBtn.addEventListener('click', function () {
+            playStationChimeThenSpeak(breakMessageId);
+        });
+    }
+
+    if (testCloseBtn) {
+        testCloseBtn.addEventListener('click', function () {
+            playStationChimeThenSpeak(closeMessageId);
+        });
+    }
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = function () {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
+    checkAndPlayReminder();
+    setInterval(checkAndPlayReminder, 30000);
+});
+</script>
 @endsection

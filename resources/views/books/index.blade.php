@@ -28,9 +28,91 @@
         border-radius: 6px;
         border: 1px solid #ddd;
     }
+
+    .top-search-bar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 12px;
+    }
+
+    .top-search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .top-search-input {
+        width: 360px;
+        max-width: 100%;
+        border-radius: 999px;
+        border: 1px solid #dbe3f0;
+        background: #fff;
+        padding: 10px 16px;
+        outline: none;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .top-search-btn,
+    .top-search-reset {
+        border-radius: 999px !important;
+        padding: 8px 16px;
+    }
+
+    .search-result-note {
+        text-align: right;
+        font-size: .85rem;
+        color: #6b7280;
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .top-search-bar {
+            justify-content: stretch;
+        }
+
+        .top-search-form {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .top-search-input {
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="container py-4">
+
+    {{-- FORM PENCARIAN DI ATAS HEADER KANAN --}}
+    <div class="top-search-bar">
+        <form method="GET" action="{{ route('books.index') }}" class="top-search-form">
+            <input
+                type="text"
+                name="q"
+                value="{{ request('q') }}"
+                class="top-search-input"
+                placeholder="Cari ID buku, judul, pengarang, penerbit, tahun, atau no rak..."
+            >
+
+            <button type="submit" class="btn btn-primary top-search-btn">
+                Cari
+            </button>
+
+            @if(request('q'))
+                <a href="{{ route('books.index') }}" class="btn btn-outline-secondary top-search-reset">
+                    Reset
+                </a>
+            @endif
+        </form>
+    </div>
+
+    @if(request('q'))
+        <div class="search-result-note">
+            Hasil pencarian untuk: <strong>{{ request('q') }}</strong>
+        </div>
+    @endif
 
     {{-- Header --}}
     <div class="page-header-box d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -39,8 +121,6 @@
             <p>Kelola koleksi buku yang tersedia di perpustakaan.</p>
         </div>
         <div>
-
-            {{-- 🔵 Tambahan: Tombol Import Excel --}}
             <a href="{{ route('books.import.form') }}" class="btn btn-info me-2">
                 📥 Import Excel
             </a>
@@ -71,15 +151,13 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width: 60px;">No.</th>
-
-                            {{-- ✅ TAMBAHAN: ID BUKU --}}
                             <th style="width: 120px;">ID Buku</th>
-
                             <th>Cover</th>
                             <th>Judul</th>
                             <th>Pengarang</th>
                             <th>Penerbit</th>
                             <th style="width: 100px;">Tahun</th>
+                            <th style="width: 110px;">No Rak</th>
                             <th>Deskripsi</th>
                             <th class="text-center" style="width: 90px;">Stok</th>
                             <th class="text-center" style="width: 170px;">Aksi</th>
@@ -91,14 +169,13 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
 
-                                {{-- ✅ TAMBAHAN: ID BUKU --}}
                                 <td>
                                     {{ $book->book_code ?? ('BK-' . $book->id) }}
                                 </td>
 
                                 <td>
                                     @if ($book->cover)
-                                        <img src="{{ asset('storage/' . $book->cover) }}" class="img-cover">
+                                        <img src="{{ asset('storage/' . $book->cover) }}" class="img-cover" alt="Cover buku">
                                     @else
                                         <span class="text-muted">Tidak ada</span>
                                     @endif
@@ -108,6 +185,9 @@
                                 <td>{{ $book->author }}</td>
                                 <td>{{ $book->publisher }}</td>
                                 <td>{{ $book->year }}</td>
+                                <td>
+                                    {{ $book->rack_number ?? $book->no_rak ?? '-' }}
+                                </td>
 
                                 <td>{{ Str::limit($book->description, 50, '...') }}</td>
 
@@ -128,7 +208,6 @@
                                           method="POST"
                                           class="d-inline"
                                           onsubmit="return confirm('Yakin ingin menghapus buku ini?');">
-
                                         @csrf
                                         @method('DELETE')
 
@@ -139,7 +218,7 @@
 
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">
+                                <td colspan="11" class="text-center py-4 text-muted">
                                     Belum ada data buku.
                                     <strong>Tambah Buku</strong> untuk mulai menambahkan data.
                                 </td>

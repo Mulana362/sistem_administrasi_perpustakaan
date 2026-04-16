@@ -114,6 +114,14 @@
                    value="{{ old('year') }}" required>
         </div>
 
+        {{-- NO RAK --}}
+        <div class="mb-3">
+            <label>No Rak</label>
+            <input type="text" name="no_rak" class="form-control"
+                   placeholder="Contoh: A-01 / Rak Novel-02" value="{{ old('no_rak') }}">
+            <small class="text-muted">Isi lokasi rak buku agar lebih mudah dicari.</small>
+        </div>
+
         {{-- STOK --}}
         <div class="mb-3">
             <label>Stok Buku</label>

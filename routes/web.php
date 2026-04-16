@@ -73,7 +73,8 @@ Route::get('/katalog-buku', function () {
 
     if ($q) {
         $booksQuery->where(function ($query) use ($q) {
-            $query->where('title', 'like', "%{$q}%")
+            $query->where('book_code', 'like', "%{$q}%")
+                ->orWhere('title', 'like', "%{$q}%")
                 ->orWhere('author', 'like', "%{$q}%")
                 ->orWhere('publisher', 'like', "%{$q}%")
                 ->orWhere('year', 'like', "%{$q}%");
@@ -214,6 +215,18 @@ Route::get('visitors/export', [VisitorController::class, 'exportExcel'])
 
 Route::get('visitors/print', [VisitorController::class, 'print'])
     ->name('visitors.print');
+
+
+/*
+|--------------------------------------------------------------------------
+| TAMBAHAN: KONFIRMASI PEMBAYARAN DENDA
+|--------------------------------------------------------------------------
+*/
+Route::patch('borrowings/{borrowing}/fine-paid', [BorrowingController::class, 'markFinePaid'])
+    ->name('borrowings.fine.paid');
+
+Route::patch('borrowings/{borrowing}/fine-unpaid', [BorrowingController::class, 'markFineUnpaid'])
+    ->name('borrowings.fine.unpaid');
 
 
 /*
