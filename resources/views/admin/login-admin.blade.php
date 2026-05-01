@@ -168,16 +168,16 @@
         <p class="login-sub">Perpustakaan SMPN 1 Bandung</p>
 
         @if (session('error'))
-            <div class="alert-error">{{ session('error') }}</div>
+            <div class="alert-error">Email atau password tidak sesuai. Silakan periksa kembali.</div>
         @endif
 
-        <form method="POST" action="{{ route('admin.login.submit') }}">
+        <form method="POST" action="{{ route('admin.login.submit') }}" autocomplete="off">
             @csrf
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email Admin</label>
                 <input type="email" id="email" name="email" class="form-control"
-                       placeholder="admin@sekolah.sch.id" required autofocus>
+                       placeholder="Masukkan email admin" autocomplete="off" required autofocus>
                 @error('email')
                     <div class="text-danger" style="font-size:.8rem;">{{ $message }}</div>
                 @enderror
@@ -186,7 +186,7 @@
             <div class="mb-3">
                 <label for="password" class="form-label">Password Admin</label>
                 <input type="password" id="password" name="password" class="form-control"
-                       placeholder="Masukkan password" required>
+                       placeholder="Masukkan password" autocomplete="new-password" required>
                 @error('password')
                     <div class="text-danger" style="font-size:.8rem;">{{ $message }}</div>
                 @enderror

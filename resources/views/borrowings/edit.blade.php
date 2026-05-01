@@ -376,7 +376,7 @@
             </div>
 
             <label class="edit-label">Status Peminjaman</label>
-            <select name="status" class="edit-select" required>
+            <select name="status" id="status_peminjaman" class="edit-select" required>
                 @php
                     $currentStatus = old('status', $borrowing->status);
                 @endphp
@@ -442,7 +442,7 @@
             </tr>
             <tr>
                 <td>Status</td><td>:</td>
-                <td>{{ $borrowing->status }}</td>
+                <td id="slipStatus">{{ $borrowing->status }}</td>
             </tr>
         </table>
 
@@ -479,8 +479,10 @@
         const wrapper = document.querySelector('.edit-borrow-wrapper');
         const borrowDateInput = document.getElementById('tanggal_pinjam');
         const dueDateInput = document.getElementById('tanggal_jatuh_tempo');
+        const statusSelect = document.getElementById('status_peminjaman');
         const slipBorrowDate = document.getElementById('slipBorrowDate');
         const slipDueDate = document.getElementById('slipDueDate');
+        const slipStatus = document.getElementById('slipStatus');
         const durationDays = Math.max(parseInt(wrapper?.dataset?.requestedDuration || '1', 10), 1);
 
         function formatTanggalIndonesia(dateString) {
@@ -516,12 +518,21 @@
             }
         }
 
+        function updateSlipStatus() {
+            if (statusSelect && slipStatus) {
+                slipStatus.textContent = statusSelect.value;
+            }
+        }
+
         hitungJatuhTempo();
+        updateSlipStatus();
 
         borrowDateInput?.addEventListener('change', hitungJatuhTempo);
+        statusSelect?.addEventListener('change', updateSlipStatus);
 
         document.getElementById('btnPrintSlip')?.addEventListener('click', function () {
             hitungJatuhTempo();
+            updateSlipStatus();
             window.print();
         });
     })();

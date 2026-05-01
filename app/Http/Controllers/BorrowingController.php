@@ -6,6 +6,7 @@ use App\Models\Borrowing;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 
 class BorrowingController extends Controller
@@ -146,7 +147,9 @@ class BorrowingController extends Controller
             $book = Book::where('id', $request->book_id)->lockForUpdate()->firstOrFail();
 
             if ($book->stock < 1) {
-                abort(422, 'Stok buku "' . $book->title . '" sudah habis.');
+                throw ValidationException::withMessages([
+                    'book_id' => 'Stok buku "' . $book->title . '" sudah habis.',
+                ]);
             }
 
             $activeCount = Borrowing::where('student_nis', $request->student_nis)
@@ -155,7 +158,9 @@ class BorrowingController extends Controller
                 ->count();
 
             if ($activeCount >= 3) {
-                abort(422, 'Siswa ini sudah mencapai maksimal 3 buku aktif.');
+                throw ValidationException::withMessages([
+                    'student_nis' => 'Siswa ini sudah mencapai maksimal 3 buku aktif.',
+                ]);
             }
 
             $already = Borrowing::where('student_nis', $request->student_nis)
@@ -165,7 +170,9 @@ class BorrowingController extends Controller
                 ->exists();
 
             if ($already) {
-                abort(422, 'Buku ini sudah diajukan / sedang dipinjam oleh siswa tersebut.');
+                throw ValidationException::withMessages([
+                    'book_id' => 'Buku ini sudah diajukan / sedang dipinjam oleh siswa tersebut.',
+                ]);
             }
 
             Borrowing::create([
@@ -233,7 +240,9 @@ class BorrowingController extends Controller
                     ->count();
 
                 if ($activeCount >= 3) {
-                    abort(422, 'Siswa ini sudah mencapai maksimal 3 buku aktif.');
+                    throw ValidationException::withMessages([
+                        'student_nis' => 'Siswa ini sudah mencapai maksimal 3 buku aktif.',
+                    ]);
                 }
 
                 $already = Borrowing::where('student_nis', $newStudentNis)
@@ -244,7 +253,9 @@ class BorrowingController extends Controller
                     ->exists();
 
                 if ($already) {
-                    abort(422, 'Buku ini sudah diajukan / sedang dipinjam oleh siswa tersebut.');
+                    throw ValidationException::withMessages([
+                        'book_id' => 'Buku ini sudah diajukan / sedang dipinjam oleh siswa tersebut.',
+                    ]);
                 }
             }
 
@@ -254,7 +265,9 @@ class BorrowingController extends Controller
                 }
 
                 if (!$newBook || $newBook->stock < 1) {
-                    abort(422, 'Stok buku baru sudah habis.');
+                    throw ValidationException::withMessages([
+                        'book_id' => 'Stok buku baru sudah habis.',
+                    ]);
                 }
 
                 $newBook->decrement('stock');
@@ -262,7 +275,9 @@ class BorrowingController extends Controller
 
             if ($oldStatus === 'Diajukan' && $newStatus === 'Dipinjam') {
                 if (!$newBook || $newBook->stock < 1) {
-                    abort(422, 'Stok buku sudah habis. Tidak bisa approve.');
+                    throw ValidationException::withMessages([
+                        'book_id' => 'Stok buku sudah habis. Tidak bisa approve.',
+                    ]);
                 }
 
                 $newBook->decrement('stock');

@@ -9,6 +9,7 @@ use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\StudentBorrowController;
 use App\Http\Controllers\ExcelImportController;
+use App\Http\Controllers\BookIssueController;
 
 use App\Models\Book;
 use App\Models\Member;
@@ -227,6 +228,18 @@ Route::patch('borrowings/{borrowing}/fine-paid', [BorrowingController::class, 'm
 
 Route::patch('borrowings/{borrowing}/fine-unpaid', [BorrowingController::class, 'markFineUnpaid'])
     ->name('borrowings.fine.unpaid');
+
+
+/*
+|--------------------------------------------------------------------------
+| TAMBAHAN: BUKU HILANG / RUSAK
+|--------------------------------------------------------------------------
+*/
+Route::resource('book-issues', BookIssueController::class);
+Route::patch('book-issues/{bookIssue}/mark-processing', [BookIssueController::class, 'markProcessing'])
+    ->name('book-issues.processing');
+Route::patch('book-issues/{bookIssue}/mark-finished', [BookIssueController::class, 'markFinished'])
+    ->name('book-issues.finished');
 
 
 /*

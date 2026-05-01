@@ -216,16 +216,11 @@
             <label class="visit-label">Keperluan Kunjungan</label>
             <select name="purpose" class="visit-select" required>
                 <option value="">-- Pilih Keperluan --</option>
-                <option value="Membaca di perpustakaan">Membaca di perpustakaan</option>
-                <option value="Mengerjakan tugas">Mengerjakan tugas</option>
-                <option value="Meminjam / mengembalikan buku">Meminjam / mengembalikan buku</option>
-                <option value="Lainnya">Lainnya</option>
+                <option value="Membaca di perpustakaan" {{ old('purpose') == 'Membaca di perpustakaan' ? 'selected' : '' }}>Membaca di perpustakaan</option>
+                <option value="Mengerjakan tugas" {{ old('purpose') == 'Mengerjakan tugas' ? 'selected' : '' }}>Mengerjakan tugas</option>
+                <option value="Meminjam / mengembalikan buku" {{ old('purpose') == 'Meminjam / mengembalikan buku' ? 'selected' : '' }}>Meminjam / mengembalikan buku</option>
+                <option value="Lainnya" {{ old('purpose') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
             </select>
-
-            {{-- Keterangan opsional --}}
-            <label class="visit-label">Keterangan Tambahan (opsional)</label>
-            <textarea name="note" class="visit-textarea"
-                      placeholder="Contoh: Mencari referensi buku IPA, menunggu guru, dst.">{{ old('note') }}</textarea>
 
             {{-- Tombol Simpan --}}
             <button type="submit" class="visit-btn">Simpan Kunjungan</button>

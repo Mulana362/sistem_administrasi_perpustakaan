@@ -71,6 +71,7 @@
         align-items: center;
         justify-content: center;
         font-size: 1.9rem;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
     }
 
     .rekap-hero-title {
@@ -98,6 +99,7 @@
         background: rgba(15,23,42,0.16);
         padding: 6px 12px;
         border-radius: 999px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
     }
 
     /* KARTU STATISTIK */
@@ -109,34 +111,88 @@
     }
 
     .rekap-card {
-        border-radius: 18px;
-        padding: 16px 18px;
+        border-radius: 20px;
+        padding: 18px 18px 16px;
         color: #ffffff;
         box-shadow: 0 12px 30px rgba(15,23,42,0.15);
+        position: relative;
+        overflow: hidden;
+        min-height: 150px;
+    }
+
+    .rekap-card::after {
+        content: "";
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 999px;
+        right: -28px;
+        top: -28px;
+        background: rgba(255,255,255,.14);
     }
 
     .rekap-card-1 { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .rekap-card-2 { background: linear-gradient(135deg, #a855f7, #6366f1); }
+    .rekap-card-2 { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
     .rekap-card-3 { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
 
+    .rekap-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .rekap-card-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: rgba(15,23,42,.14);
+        font-size: 1.2rem;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
+    }
+
     .rekap-card-label {
-        font-size: .78rem;
+        font-size: .76rem;
         text-transform: uppercase;
-        letter-spacing: .12em;
+        letter-spacing: .14em;
         font-weight: 700;
-        opacity: .9;
-        margin-bottom: 6px;
+        opacity: .92;
+        margin-bottom: 8px;
     }
 
     .rekap-card-number {
-        font-size: 2.1rem;
-        font-weight: 700;
-        margin-bottom: 4px;
+        font-size: 2.35rem;
+        line-height: 1;
+        font-weight: 800;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 2;
     }
 
     .rekap-card-desc {
-        font-size: .85rem;
-        opacity: .9;
+        font-size: .84rem;
+        opacity: .95;
+        position: relative;
+        z-index: 2;
+    }
+
+    .rekap-card-mini {
+        margin-top: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        background: rgba(15,23,42,.14);
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: .75rem;
+        position: relative;
+        z-index: 2;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
     }
 
     /* BOX UMUM */
@@ -192,6 +248,17 @@
         gap: .35rem;
     }
 
+    .btn-print-modern {
+        background: linear-gradient(135deg, #111827, #374151);
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 10px 24px rgba(17,24,39,.18);
+    }
+
+    .btn-print-modern:hover {
+        filter: brightness(1.06);
+    }
+
     /* TABEL */
     .rekap-table thead th {
         background: #eff6ff;
@@ -243,9 +310,142 @@
     .chart-box {
         background: #ffffff;
         border-radius: 18px;
-        padding: 14px 18px 18px;
+        padding: 16px 18px 18px;
         border: 1px solid #e5e7eb;
         box-shadow: 0 10px 24px rgba(15,23,42,0.10);
+    }
+
+    .chart-inner {
+        margin-top: 10px;
+        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+        border: 1px solid #eef2f7;
+        border-radius: 16px;
+        padding: 12px 14px 6px;
+    }
+
+    .print-only {
+        display: none;
+    }
+
+    @media (max-width: 900px) {
+        .rekap-stat-row {
+            grid-template-columns: 1fr;
+        }
+
+        .rekap-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .rekap-hero-right {
+            text-align: left;
+        }
+    }
+
+    @media print {
+        body {
+            background: #ffffff !important;
+        }
+
+        .rekap-wrapper {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        .rekap-hero,
+        .rekap-stat-row,
+        .chart-box,
+        .rekap-toolbar,
+        .no-print {
+            display: none !important;
+        }
+
+        .rekap-box {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .print-only {
+            display: block !important;
+            margin-bottom: 18px;
+        }
+
+        .print-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 20px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: #111827;
+        }
+
+        .print-subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .print-date {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 14px;
+        }
+
+        .print-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .print-stat-card {
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .print-stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: .06em;
+        }
+
+        .print-stat-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .rekap-table thead th {
+            background: #f3f4f6 !important;
+            color: #111827 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .rekap-table tbody tr:nth-child(even),
+        .rekap-table tbody tr:hover {
+            background: transparent !important;
+        }
+
+        .rekap-table .btn,
+        .rekap-table form {
+            display: none !important;
+        }
+
+        .rekap-table th:last-child,
+        .rekap-table td:last-child {
+            display: none !important;
+        }
     }
 </style>
 
@@ -275,30 +475,73 @@
     {{-- KARTU STATISTIK --}}
     <div class="rekap-stat-row">
         <div class="rekap-card rekap-card-1">
-            <div class="rekap-card-label">HARI INI</div>
-            <div class="rekap-card-number">{{ $todayCount }}</div>
+            <div class="rekap-card-top">
+                <div>
+                    <div class="rekap-card-label">Hari Ini</div>
+                    <div class="rekap-card-number">{{ $todayCount }}</div>
+                </div>
+                <div class="rekap-card-badge">🟢</div>
+            </div>
             <div class="rekap-card-desc">
                 Jumlah pengunjung pada tanggal {{ now()->translatedFormat('d F Y') }}.
             </div>
+            <div class="rekap-card-mini">Realtime</div>
         </div>
+
         <div class="rekap-card rekap-card-2">
-            <div class="rekap-card-label">BULAN INI</div>
-            <div class="rekap-card-number">{{ $thisMonthCount }}</div>
+            <div class="rekap-card-top">
+                <div>
+                    <div class="rekap-card-label">Bulan Ini</div>
+                    <div class="rekap-card-number">{{ $thisMonthCount }}</div>
+                </div>
+                <div class="rekap-card-badge">📅</div>
+            </div>
             <div class="rekap-card-desc">
                 Total kunjungan selama {{ now()->translatedFormat('F Y') }}.
             </div>
+            <div class="rekap-card-mini">Statistik bulanan</div>
         </div>
+
         <div class="rekap-card rekap-card-3">
-            <div class="rekap-card-label">SELURUH DATA</div>
-            <div class="rekap-card-number">{{ $totalVisitors }}</div>
+            <div class="rekap-card-top">
+                <div>
+                    <div class="rekap-card-label">Seluruh Data</div>
+                    <div class="rekap-card-number">{{ $totalVisitors }}</div>
+                </div>
+                <div class="rekap-card-badge">📚</div>
+            </div>
             <div class="rekap-card-desc">
                 Akumulasi semua kunjungan perpustakaan yang pernah tercatat di sistem.
             </div>
+            <div class="rekap-card-mini">Total histori kunjungan</div>
         </div>
     </div>
 
     {{-- DATA KUNJUNGAN (TABEL) --}}
     <div class="rekap-box">
+
+        {{-- KHUSUS CETAK --}}
+        <div class="print-only">
+            <div class="print-title">Laporan Rekap Kunjungan Perpustakaan</div>
+            <div class="print-subtitle">Perpustakaan SMPN 1 Bandung</div>
+            <div class="print-date">Dicetak pada {{ now()->translatedFormat('d F Y, H:i') }} WIB</div>
+
+            <div class="print-stats">
+                <div class="print-stat-card">
+                    <div class="print-stat-label">Hari Ini</div>
+                    <div class="print-stat-number">{{ $todayCount }}</div>
+                </div>
+                <div class="print-stat-card">
+                    <div class="print-stat-label">Bulan Ini</div>
+                    <div class="print-stat-number">{{ $thisMonthCount }}</div>
+                </div>
+                <div class="print-stat-card">
+                    <div class="print-stat-label">Total Data</div>
+                    <div class="print-stat-number">{{ $totalVisitors }}</div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
                 <div class="rekap-section-title">
@@ -310,14 +553,13 @@
                 </div>
             </div>
 
-            <div class="rekap-toolbar">
+            <div class="rekap-toolbar no-print">
+                <button type="button" onclick="window.print()" class="btn btn-pill btn-print-modern">
+                    🖨 Cetak Laporan
+                </button>
                 <button type="button" onclick="window.history.back()" class="btn btn-outline-secondary btn-pill">
                     ← Kembali
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary btn-pill">
-                    🏠 Dashboard
-                </a>
-                </a>
             </div>
         </div>
 
@@ -338,7 +580,6 @@
                 <tbody>
                     @forelse($visitors as $visitor)
                         @php
-                            // pilih field waktu yang ada: visit_time > time_in > time > created_at
                             $rawTime = $visitor->visit_time
                                 ?? $visitor->time_in
                                 ?? $visitor->time
@@ -379,16 +620,16 @@
     </div>
 
     {{-- FILTER + GRAFIK --}}
-    <div class="chart-box">
+    <div class="chart-box no-print">
         <div class="rekap-filter-row">
             <div>
                 <div class="rekap-section-title mb-1">
                     <span class="emoji">📅</span>
-                    <span>Filter Tanggal & Grafik Kunjungan</span>
+                    <span>Filter Tanggal & Tren Kunjungan</span>
                 </div>
                 <div class="rekap-section-sub mb-0">
                     Pilih rentang tanggal untuk melihat rekap di tabel. Grafik di bawah
-                    menunjukkan tren kunjungan per bulan.
+                    menampilkan tren kunjungan dengan tampilan yang lebih modern dan rapi.
                 </div>
             </div>
 
@@ -408,15 +649,10 @@
             </form>
         </div>
 
-        <div style="height: 260px;">
-            <canvas id="visitChart"></canvas>
-        </div>
-
-        {{-- tombol kembali tambahan di bawah grafik --}}
-        <div class="mt-3 d-flex justify-content-end">
-            <button type="button" onclick="window.history.back()" class="btn btn-outline-secondary btn-pill">
-                ← Kembali
-            </button>
+        <div class="chart-inner">
+            <div style="height: 240px;">
+                <canvas id="visitChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -427,6 +663,8 @@
 <script>
     (function () {
         const canvas = document.getElementById('visitChart');
+        if (!canvas) return;
+
         const ctx = canvas.getContext('2d');
 
         const labels = {!! json_encode($chartLabels ?? []) !!};
@@ -434,11 +672,13 @@
 
         if (!labels.length) return;
 
-        // gradient modern
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        const maxValue = Math.max(...data);
+        const suggestedMax = maxValue <= 5 ? 6 : maxValue <= 10 ? 12 : maxValue + 2;
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 240);
         gradient.addColorStop(0, 'rgba(37, 99, 235, 0.95)');
-        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.75)');
-        gradient.addColorStop(1, 'rgba(129, 140, 248, 0.25)');
+        gradient.addColorStop(0.55, 'rgba(59, 130, 246, 0.78)');
+        gradient.addColorStop(1, 'rgba(147, 197, 253, 0.55)');
 
         new Chart(ctx, {
             type: 'bar',
@@ -449,36 +689,46 @@
                     data: data,
                     backgroundColor: gradient,
                     borderColor: 'rgba(37, 99, 235, 1)',
-                    borderWidth: 1,
-                    borderRadius: 10,
-                    hoverBorderWidth: 2,
-                    maxBarThickness: 40,
+                    borderWidth: 1.2,
+                    borderRadius: 14,
+                    borderSkipped: false,
+                    maxBarThickness: 56,
+                    barPercentage: 0.58,
+                    categoryPercentage: 0.64,
+                    hoverBackgroundColor: 'rgba(37, 99, 235, 0.88)',
+                    hoverBorderColor: 'rgba(29, 78, 216, 1)',
+                    hoverBorderWidth: 1.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
                 layout: {
                     padding: {
-                        top: 10,
-                        left: 5,
-                        right: 5,
-                        bottom: 5
+                        top: 4,
+                        left: 4,
+                        right: 6,
+                        bottom: 0
                     }
                 },
                 plugins: {
                     legend: {
-                        display: false,
+                        display: false
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                        padding: 10,
-                        cornerRadius: 10,
-                        titleFont: { size: 12, weight: '600' },
-                        bodyFont: { size: 11 },
+                        backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e5e7eb',
+                        displayColors: false,
+                        padding: 12,
+                        cornerRadius: 12,
                         callbacks: {
                             label: function (context) {
-                                return ' ' + context.parsed.y + ' kunjungan';
+                                return context.parsed.y + ' kunjungan';
                             }
                         }
                     }
@@ -486,27 +736,42 @@
                 scales: {
                     x: {
                         grid: {
-                            display: false,
+                            display: false
+                        },
+                        border: {
+                            display: false
                         },
                         ticks: {
-                            font: { size: 11 }
+                            color: '#64748b',
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
                         }
                     },
                     y: {
                         beginAtZero: true,
+                        suggestedMax: suggestedMax,
+                        border: {
+                            display: false
+                        },
                         grid: {
-                            color: 'rgba(209, 213, 219, 0.5)',
-                            drawBorder: false,
+                            color: 'rgba(148, 163, 184, 0.16)',
+                            drawBorder: false
                         },
                         ticks: {
+                            stepSize: 2,
                             precision: 0,
-                            font: { size: 11 }
+                            color: '#64748b',
+                            font: {
+                                size: 11
+                            }
                         }
                     }
                 },
                 animation: {
                     duration: 700,
-                    easing: 'easeOutCubic'
+                    easing: 'easeOutQuart'
                 }
             }
         });
