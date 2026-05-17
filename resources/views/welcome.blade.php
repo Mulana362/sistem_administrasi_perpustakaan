@@ -125,7 +125,7 @@
 
         .footer {
             position: absolute;
-            bottom: 18px;
+            bottom: 8px;
             width: 100%;
             text-align: center;
             color: #e5e7eb;
@@ -142,6 +142,10 @@
 <div class="content">
     <h1>Sistem Informasi Perpustakaan</h1>
     <h2>SMPN 1 Bandung</h2>
+
+    <div style="font-size: 13px; opacity: .86; margin: -10px 0 18px; line-height: 1.5;">
+        Jalan Koramil - Yudha Km 2, Desa Mander, Kecamatan Bandung, Kabupaten Serang, Provinsi Banten
+    </div>
 
     <p>
     Selamat datang di Sistem Informasi Perpustakaan SMPN 1 Bandung.

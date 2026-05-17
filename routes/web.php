@@ -190,6 +190,12 @@ Route::post('admin/import/books', [ExcelImportController::class, 'importBooks'])
 Route::post('admin/import/members', [ExcelImportController::class, 'importMembers'])
     ->name('admin.import.members');
 
+Route::post('admin/import/backup-database', [ExcelImportController::class, 'backupDatabase'])
+    ->name('admin.import.backup');
+
+Route::post('admin/import/restore-database', [ExcelImportController::class, 'restoreDatabase'])
+    ->name('admin.import.restore');
+
 /**
  * ⚠️ Pastikan method destroyLog ADA di ExcelImportController
  */

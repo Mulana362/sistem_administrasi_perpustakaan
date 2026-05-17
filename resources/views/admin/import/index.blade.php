@@ -350,6 +350,54 @@
         </div>
     </div>
 
+    {{-- BACKUP & RESTORE DATABASE --}}
+    <div class="logs-card mt-3">
+        <div class="logs-header">
+            <div class="logs-title">
+                <span>🛡️</span>
+                <span>Backup & Restore Database</span>
+            </div>
+            <small class="text-muted">Keamanan data sistem</small>
+        </div>
+
+        <p class="mb-3 text-muted" style="font-size:.82rem; line-height:1.7;">
+            Gunakan backup sebelum import besar atau hapus batch agar data buku, anggota, peminjaman,
+            pengembalian, kunjungan, denda, dan laporan buku hilang/rusak bisa dikembalikan jika terjadi kesalahan.
+        </p>
+
+        <div class="row g-3">
+            <div class="col-md-5">
+                <form method="POST" action="{{ route('admin.import.backup') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary btn-pill">
+                        Backup Database
+                    </button>
+                </form>
+            </div>
+
+            <div class="col-md-7">
+                <form method="POST"
+                      action="{{ route('admin.import.restore') }}"
+                      enctype="multipart/form-data"
+                      onsubmit="return confirm('Restore database akan menimpa data saat ini dengan isi file backup. Lanjutkan?');">
+                    @csrf
+
+                    <div class="d-flex flex-column flex-md-row gap-2">
+                        <input type="file" name="backup_file" class="form-control form-control-sm" accept=".json,.txt" required>
+
+                        <button type="submit" class="btn btn-danger btn-pill">
+                            Restore Database
+                        </button>
+                    </div>
+
+                    @error('backup_file')
+                        <small class="text-danger d-block mt-1">{{ $message }}</small>
+                    @enderror
+                </form>
+            </div>
+        </div>
+    </div>
+
     {{-- RIWAYAT IMPORT --}}
     <div class="logs-card mt-3">
         <div class="logs-header">
@@ -357,7 +405,7 @@
                 <span>🕒</span>
                 <span>Riwayat Import Terakhir</span>
             </div>
-            <small class="text-muted">Maks. 10 batch terakhir</small>
+            <small class="text-muted">Maks. 30 batch terakhir</small>
         </div>
 
         @if($logs->isEmpty())

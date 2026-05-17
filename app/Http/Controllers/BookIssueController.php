@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\BookIssue;
 use App\Models\Borrowing;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookIssueController extends Controller
 {
@@ -41,22 +43,24 @@ class BookIssueController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $bookIssue = BookIssue::create([
-            'borrowing_id' => $request->borrowing_id,
-            'book_id' => $request->book_id,
-            'student_name' => $request->student_name,
-            'student_nis' => $request->student_nis,
-            'student_class' => $request->student_class,
-            'issue_type' => $request->issue_type,
-            'reported_at' => $request->reported_at,
-            'fine_amount' => $request->fine_amount ?? 0,
-            'replacement_required' => $request->replacement_required ?? 0,
-            'replacement_note' => $request->replacement_note,
-            'status' => $request->status,
-            'note' => $request->note,
-        ]);
+        DB::transaction(function () use ($request) {
+            $bookIssue = BookIssue::create([
+                'borrowing_id' => $request->borrowing_id,
+                'book_id' => $request->book_id,
+                'student_name' => $request->student_name,
+                'student_nis' => $request->student_nis,
+                'student_class' => $request->student_class,
+                'issue_type' => $request->issue_type,
+                'reported_at' => $request->reported_at,
+                'fine_amount' => $request->fine_amount ?? 0,
+                'replacement_required' => $request->replacement_required ?? 0,
+                'replacement_note' => $request->replacement_note,
+                'status' => $request->status,
+                'note' => $request->note,
+            ]);
 
-        $this->decreaseLostBookStockIfNeeded($bookIssue);
+            $this->finishBorrowingIssueIfNeeded($bookIssue);
+        });
 
         return redirect()
             ->route('borrowings.index', ['active_tab' => 'issue'])
@@ -80,17 +84,19 @@ class BookIssueController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $oldStatus = $bookIssue->status;
+        DB::transaction(function () use ($request, $bookIssue) {
+            $oldStatus = $bookIssue->status;
 
-        $bookIssue->update([
-            'fine_amount' => $request->fine_amount ?? 0,
-            'replacement_required' => $request->replacement_required ?? 0,
-            'replacement_note' => $request->replacement_note,
-            'status' => $request->status,
-            'note' => $request->note,
-        ]);
+            $bookIssue->update([
+                'fine_amount' => $request->fine_amount ?? 0,
+                'replacement_required' => $request->replacement_required ?? 0,
+                'replacement_note' => $request->replacement_note,
+                'status' => $request->status,
+                'note' => $request->note,
+            ]);
 
-        $this->decreaseLostBookStockIfNeeded($bookIssue, $oldStatus);
+            $this->finishBorrowingIssueIfNeeded($bookIssue, $oldStatus);
+        });
 
         return redirect()
             ->route('borrowings.index', ['active_tab' => 'issue'])
@@ -119,26 +125,24 @@ class BookIssueController extends Controller
 
     public function markFinished(BookIssue $bookIssue)
     {
-        $oldStatus = $bookIssue->status;
+        DB::transaction(function () use ($bookIssue) {
+            $oldStatus = $bookIssue->status;
 
-        $bookIssue->update([
-            'status' => 'Selesai',
-        ]);
+            $bookIssue->update([
+                'status' => 'Selesai',
+            ]);
 
-        $this->decreaseLostBookStockIfNeeded($bookIssue, $oldStatus);
+            $this->finishBorrowingIssueIfNeeded($bookIssue, $oldStatus);
+        });
 
         return redirect()
             ->route('borrowings.index', ['active_tab' => 'issue'])
             ->with('success', 'Status kasus diubah menjadi Selesai.');
     }
 
-    private function decreaseLostBookStockIfNeeded(BookIssue $bookIssue, ?string $oldStatus = null): void
+    private function finishBorrowingIssueIfNeeded(BookIssue $bookIssue, ?string $oldStatus = null): void
     {
-        $bookIssue->loadMissing('book');
-
-        if ($bookIssue->issue_type !== 'Hilang') {
-            return;
-        }
+        $bookIssue->refresh();
 
         if ($bookIssue->status !== 'Selesai') {
             return;
@@ -148,29 +152,73 @@ class BookIssueController extends Controller
             return;
         }
 
-        $book = $bookIssue->book;
+        $borrowing = Borrowing::where('id', $bookIssue->borrowing_id)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$borrowing) {
+            return;
+        }
+
+        $wasStillBorrowed = in_array($borrowing->status, ['Dipinjam', 'Terlambat'], true)
+            && is_null($borrowing->return_date);
+
+        if (!$wasStillBorrowed) {
+            return;
+        }
+
+        $borrowing->status = $bookIssue->issue_type;
+        $borrowing->return_date = now()->toDateString();
+        $borrowing->save();
+
+        if ($bookIssue->issue_type === 'Rusak' || $this->shouldIncreaseStockForLostReplacement($bookIssue)) {
+            $this->increaseBookStock($bookIssue);
+        }
+    }
+
+    private function shouldIncreaseStockForLostReplacement(BookIssue $bookIssue): bool
+    {
+        return $bookIssue->issue_type === 'Hilang'
+            && (int) ($bookIssue->replacement_required ?? 0) === 1;
+    }
+
+    private function increaseBookStock(BookIssue $bookIssue): void
+    {
+        $bookId = $bookIssue->book_id;
+
+        if (!$bookId && $bookIssue->borrowing) {
+            $bookId = $bookIssue->borrowing->book_id;
+        }
+
+        if (!$bookId) {
+            return;
+        }
+
+        $book = Book::where('id', $bookId)
+            ->lockForUpdate()
+            ->first();
 
         if (!$book) {
             return;
         }
 
-        $stockColumn = null;
-
-        foreach (['stock', 'stok', 'jumlah_stok'] as $column) {
-            if (array_key_exists($column, $book->getAttributes())) {
-                $stockColumn = $column;
-                break;
-            }
-        }
+        $stockColumn = $this->getStockColumn($book);
 
         if (!$stockColumn) {
             return;
         }
 
-        if ((int) $book->{$stockColumn} <= 0) {
-            return;
+        $book->increment($stockColumn);
+    }
+
+    private function getStockColumn(Book $book): ?string
+    {
+        foreach (['stock', 'stok', 'jumlah_stok'] as $column) {
+            if (array_key_exists($column, $book->getAttributes())) {
+                return $column;
+            }
         }
 
-        $book->decrement($stockColumn);
+        return null;
     }
 }

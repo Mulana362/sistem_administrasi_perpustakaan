@@ -20,7 +20,7 @@ class ExcelImportController extends Controller
             $logs = collect();
         } else {
             $logs = ExcelImportLog::orderByDesc('imported_at')
-                ->take(10)
+                ->take(30)
                 ->get();
         }
 
@@ -142,7 +142,9 @@ class ExcelImportController extends Controller
                     ]);
                 }
 
-                $createdIds[] = $book->id;
+                if ($book->wasRecentlyCreated) {
+                    $createdIds[] = $book->id;
+                }
             }
 
             if (Schema::hasTable('excel_import_logs')) {
@@ -214,7 +216,9 @@ class ExcelImportController extends Controller
                     ]
                 );
 
-                $createdIds[] = $member->id;
+                if ($member->wasRecentlyCreated) {
+                    $createdIds[] = $member->id;
+                }
             }
 
             if (Schema::hasTable('excel_import_logs')) {
@@ -249,15 +253,30 @@ class ExcelImportController extends Controller
                 $ids = [];
             }
 
+            $deletedCount = 0;
+            $keptCount = 0;
+
             if ($log->type === 'books') {
                 if (count($ids) > 0) {
-                    Borrowing::whereIn('book_id', $ids)->delete();
-                    Book::whereIn('id', $ids)->delete();
+                    $protectedIds = $this->getProtectedBookIds($ids);
+                    $deletableIds = array_values(array_diff($ids, $protectedIds));
+
+                    if (count($deletableIds) > 0) {
+                        $deletedCount = Book::whereIn('id', $deletableIds)->delete();
+                    }
+
+                    $keptCount = count($ids) - count($deletableIds);
                 }
             } elseif ($log->type === 'members') {
                 if (count($ids) > 0) {
-                    Borrowing::whereIn('member_id', $ids)->delete();
-                    Member::whereIn('id', $ids)->delete();
+                    $protectedIds = $this->getProtectedMemberIds($ids);
+                    $deletableIds = array_values(array_diff($ids, $protectedIds));
+
+                    if (count($deletableIds) > 0) {
+                        $deletedCount = Member::whereIn('id', $deletableIds)->delete();
+                    }
+
+                    $keptCount = count($ids) - count($deletableIds);
                 }
             }
 
@@ -269,11 +288,184 @@ class ExcelImportController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Batch import berhasil dihapus. Data terkait ikut dibersihkan.');
+            $message = 'Batch import berhasil dihapus. Data baru yang aman dihapus: ' . $deletedCount . '.';
+
+            if ($keptCount > 0) {
+                $message .= ' Ada ' . $keptCount . ' data yang tidak dihapus karena masih punya riwayat transaksi/laporan.';
+            }
+
+            return back()->with('success', $message);
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return back()->with('error', 'Gagal hapus batch import: ' . $e->getMessage());
         }
     }
+    public function backupDatabase()
+    {
+        try {
+            $tables = $this->getBackupTables();
+
+            $backupData = [
+                'app' => config('app.name'),
+                'created_at' => now()->toDateTimeString(),
+                'tables' => [],
+            ];
+
+            foreach ($tables as $table) {
+                if (!Schema::hasTable($table)) {
+                    continue;
+                }
+
+                $backupData['tables'][$table] = DB::table($table)->get()->map(function ($row) {
+                    return (array) $row;
+                })->values()->toArray();
+            }
+
+            $backupDir = storage_path('app/backups');
+
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
+            }
+
+            $fileName = 'backup_perpustakaan_' . now()->format('Ymd_His') . '.json';
+            $filePath = $backupDir . DIRECTORY_SEPARATOR . $fileName;
+
+            file_put_contents($filePath, json_encode($backupData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+            return response()->download($filePath);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal membuat backup database: ' . $e->getMessage());
+        }
+    }
+
+    public function restoreDatabase(Request $request)
+    {
+        $request->validate([
+            'backup_file' => 'required|file',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $content = file_get_contents($request->file('backup_file')->getRealPath());
+            $backupData = json_decode($content, true);
+
+            if (!is_array($backupData) || !isset($backupData['tables']) || !is_array($backupData['tables'])) {
+                throw new \Exception('Format file backup tidak valid.');
+            }
+
+            $allowedTables = $this->getBackupTables();
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+            foreach ($allowedTables as $table) {
+                if (!Schema::hasTable($table)) {
+                    continue;
+                }
+
+                if (!array_key_exists($table, $backupData['tables'])) {
+                    continue;
+                }
+
+                DB::table($table)->truncate();
+
+                $rows = $backupData['tables'][$table];
+
+                if (is_array($rows) && count($rows) > 0) {
+                    foreach (array_chunk($rows, 500) as $chunk) {
+                        DB::table($table)->insert($chunk);
+                    }
+                }
+            }
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+            DB::commit();
+
+            return back()->with('success', 'Restore database berhasil. Data sistem sudah dikembalikan dari file backup.');
+        } catch (\Throwable $e) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            DB::rollBack();
+
+            return back()->with('error', 'Gagal restore database: ' . $e->getMessage());
+        }
+    }
+
+    private function getBackupTables(): array
+    {
+        return [
+            'books',
+            'members',
+            'borrowings',
+            'visitors',
+            'book_issues',
+            'excel_import_logs',
+        ];
+    }
+
+    private function getProtectedBookIds(array $ids): array
+    {
+        $protectedIds = [];
+
+        if (Schema::hasTable('borrowings') && Schema::hasColumn('borrowings', 'book_id')) {
+            $protectedIds = array_merge(
+                $protectedIds,
+                Borrowing::whereIn('book_id', $ids)
+                    ->pluck('book_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            );
+        }
+
+        if (Schema::hasTable('book_issues') && Schema::hasColumn('book_issues', 'book_id')) {
+            $protectedIds = array_merge(
+                $protectedIds,
+                DB::table('book_issues')
+                    ->whereIn('book_id', $ids)
+                    ->pluck('book_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            );
+        }
+
+        return array_values(array_unique($protectedIds));
+    }
+
+    private function getProtectedMemberIds(array $ids): array
+    {
+        $protectedIds = [];
+
+        if (Schema::hasTable('borrowings') && Schema::hasColumn('borrowings', 'member_id')) {
+            $protectedIds = array_merge(
+                $protectedIds,
+                Borrowing::whereIn('member_id', $ids)
+                    ->pluck('member_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            );
+        }
+
+        if (Schema::hasTable('visitors') && Schema::hasColumn('visitors', 'member_id')) {
+            $protectedIds = array_merge(
+                $protectedIds,
+                DB::table('visitors')
+                    ->whereIn('member_id', $ids)
+                    ->pluck('member_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray()
+            );
+        }
+
+        return array_values(array_unique($protectedIds));
+    }
+
 }

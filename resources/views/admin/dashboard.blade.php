@@ -470,9 +470,9 @@
 
     <div class="stat-row">
         <div class="stat-card">
-            <div class="stat-label">Total Koleksi (Stok Buku)</div>
+            <div class="stat-label">Stok Buku Tersedia</div>
             <div class="stat-value text-primary">{{ $totalBooks }}</div>
-            <div class="stat-note">Total stok semua buku yang diinput admin.</div>
+            <div class="stat-note">Jumlah stok buku yang tersedia dan belum dipinjam siswa.</div>
         </div>
 
         <div class="stat-card">

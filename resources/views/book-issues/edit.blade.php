@@ -21,7 +21,7 @@
     }
 
     .issue-page-wrap{
-        max-width: 1240px;
+        max-width: 1040px;
         margin: 28px auto 40px;
         padding: 0 12px;
     }
@@ -143,7 +143,7 @@
 
     .issue-info-grid{
         display:grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap:14px;
     }
 
@@ -435,27 +435,18 @@
                     </div>
 
                     <div class="issue-inline-note mb-3">
-                        Gunakan bagian ini untuk memperbarui progres penanganan kasus, termasuk denda, kewajiban ganti buku, dan catatan admin.
+                        Gunakan bagian ini untuk memperbarui progres penanganan kasus. Untuk buku hilang, opsi penggantian buku yang sama akan memengaruhi stok saat status dibuat Selesai.
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Denda</label>
+                        <div class="col-md-6">
+                            <label class="form-label">Denda / Biaya Penggantian</label>
                             <input type="number" step="0.01" min="0" name="fine_amount" class="form-control"
                                    value="{{ old('fine_amount', $bookIssue->fine_amount) }}">
-                            <div class="issue-hint">Kosongkan ke 0 jika tidak ada denda.</div>
+                            <div class="issue-hint">Isi 0 jika tidak ada denda atau buku diganti tanpa biaya.</div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Wajib Ganti Buku?</label>
-                            <select name="replacement_required" class="form-select">
-                                <option value="0" {{ old('replacement_required', $bookIssue->replacement_required) == '0' ? 'selected' : '' }}>Tidak</option>
-                                <option value="1" {{ old('replacement_required', $bookIssue->replacement_required) == '1' ? 'selected' : '' }}>Ya</option>
-                            </select>
-                            <div class="issue-hint">Pilih ya jika siswa wajib mengganti buku.</div>
-                        </div>
-
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select" required>
                                 <option value="Dilaporkan" {{ old('status', $bookIssue->status) === 'Dilaporkan' ? 'selected' : '' }}>Dilaporkan</option>
@@ -465,14 +456,33 @@
                             <div class="issue-hint">Ubah status sesuai progres penyelesaian kasus.</div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Catatan Penggantian</label>
-                            <input type="text" name="replacement_note" class="form-control"
-                                   value="{{ old('replacement_note', $bookIssue->replacement_note) }}"
-                                   placeholder="Contoh: ganti buku yang sama / bayar setara">
-                        </div>
+                        @if($bookIssue->issue_type === 'Hilang')
+                            <div class="col-md-6">
+                                <label class="form-label">Buku Diganti dengan Buku yang Sama?</label>
+                                <select name="replacement_required" class="form-select">
+                                    <option value="0" {{ old('replacement_required', $bookIssue->replacement_required) == '0' ? 'selected' : '' }}>Tidak</option>
+                                    <option value="1" {{ old('replacement_required', $bookIssue->replacement_required) == '1' ? 'selected' : '' }}>Ya, buku yang sama</option>
+                                </select>
+                                <div class="issue-hint">Pilih Ya hanya jika siswa mengganti dengan judul/eksemplar yang sama. Stok akan bertambah saat kasus selesai.</div>
+                            </div>
 
-                        <div class="col-md-6">
+                            <div class="col-md-6">
+                                <label class="form-label">Catatan Penggantian</label>
+                                <input type="text" name="replacement_note" class="form-control"
+                                       value="{{ old('replacement_note', $bookIssue->replacement_note) }}"
+                                       placeholder="Contoh: diganti buku yang sama / bayar denda / diganti buku lain setara">
+                            </div>
+                        @else
+                            <input type="hidden" name="replacement_required" value="0">
+
+                            <div class="col-12">
+                                <div class="issue-inline-note">
+                                    Untuk kasus buku rusak, stok bertambah saat status kasus dibuat Selesai karena buku dianggap sudah diperbaiki dan bisa digunakan kembali.
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="col-12">
                             <label class="form-label">Catatan Admin</label>
                             <textarea name="note" class="form-control" rows="4" placeholder="Tulis catatan tindak lanjut atau hasil penyelesaian...">{{ old('note', $bookIssue->note) }}</textarea>
                         </div>

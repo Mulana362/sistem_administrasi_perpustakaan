@@ -21,7 +21,7 @@
     }
 
     .issue-page-wrap{
-        max-width: 1120px;
+        max-width: 980px;
         margin: 28px auto 40px;
         padding: 0 12px;
     }
@@ -370,7 +370,7 @@
             <div>
                 <div class="issue-hero-title">Tambah Kasus Buku Hilang / Rusak</div>
                 <div class="issue-hero-sub">
-                    Data transaksi otomatis dari peminjaman yang dipilih. Admin cukup mengisi jenis masalah, denda, dan catatan kasus.
+                    Data transaksi otomatis dari peminjaman yang dipilih. Admin cukup mengisi jenis masalah, biaya, dan catatan penyelesaian kasus.
                 </div>
             </div>
         </div>
@@ -466,7 +466,7 @@
                     </div>
 
                     <div class="issue-inline-note mb-3">
-                        Pilih jenis masalah terlebih dahulu. Field tambahan akan muncul sesuai kebutuhan kasus.
+                        Pilih jenis masalah terlebih dahulu. Jika buku hilang dan siswa mengganti buku yang sama, pilih opsi penggantian dengan hati-hati agar stok tercatat akurat.
                     </div>
 
                     <div class="row g-3">
@@ -495,19 +495,19 @@
 
                                 <div class="row g-3">
                                     <div class="col-md-5">
-                                        <label class="form-label">Wajib Ganti Buku?</label>
+                                        <label class="form-label">Buku Diganti dengan Buku yang Sama?</label>
                                         <select name="replacement_required" id="replacement_required" class="form-select">
-                                            <option value="0" {{ old('replacement_required') == '0' ? 'selected' : '' }}>Tidak</option>
-                                            <option value="1" {{ old('replacement_required', '1') == '1' ? 'selected' : '' }}>Ya</option>
+                                            <option value="0" {{ old('replacement_required', '0') == '0' ? 'selected' : '' }}>Tidak</option>
+                                            <option value="1" {{ old('replacement_required') == '1' ? 'selected' : '' }}>Ya, buku yang sama</option>
                                         </select>
-                                        <div class="issue-hint">Umumnya buku hilang perlu diganti atau dibayar setara.</div>
+                                        <div class="issue-hint">Pilih Ya hanya jika siswa mengganti dengan judul/eksemplar yang sama. Stok akan bertambah saat kasus selesai.</div>
                                     </div>
 
                                     <div class="col-md-7">
                                         <label class="form-label">Catatan Penggantian</label>
                                         <input type="text" name="replacement_note" class="form-control"
                                                value="{{ old('replacement_note') }}"
-                                               placeholder="Contoh: ganti buku yang sama / bayar setara">
+                                               placeholder="Contoh: diganti buku yang sama / bayar denda / diganti buku lain setara">
                                     </div>
                                 </div>
                             </div>
@@ -567,12 +567,12 @@ document.addEventListener('DOMContentLoaded', function () {
             lostPanel.classList.add('show');
 
             if (replacementRequired && !replacementRequired.dataset.userChanged) {
-                replacementRequired.value = '1';
+                replacementRequired.value = '0';
             }
 
             fineLabel.textContent = 'Denda / Biaya Penggantian';
             noteLabel.textContent = 'Catatan / Kronologi';
-            note.placeholder = 'Contoh: buku hilang saat dibawa pulang, siswa diminta mengganti buku atau membayar setara...';
+            note.placeholder = 'Contoh: buku hilang saat dibawa pulang, siswa membayar denda atau mengganti buku yang sama...';
             noteHint.textContent = 'Jelaskan kronologi kehilangan dan tindak lanjut penggantian buku.';
         } else if (value === 'Rusak') {
             damagedPanel.classList.add('show');

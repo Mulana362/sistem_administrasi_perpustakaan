@@ -110,7 +110,7 @@
 
     .issue-kpi-grid{
         display:grid;
-        grid-template-columns:repeat(4, minmax(0, 1fr));
+        grid-template-columns:repeat(5, minmax(0, 1fr));
         gap:14px;
         margin-bottom:16px;
     }
@@ -432,8 +432,26 @@
 
     $countIssueTotal = BookIssue::count();
     $countIssueLost = BookIssue::where('issue_type', 'Hilang')->count();
-    $countIssueDamaged = BookIssue::where('issue_type', 'Rusak')->count();
+    $countIssueDamaged = BookIssue::where('issue_type', 'Rusak')
+        ->whereIn('status', ['Dilaporkan', 'Diproses'])
+        ->count();
     $countIssueOpen = BookIssue::whereIn('status', ['Dilaporkan', 'Diproses'])->count();
+    $totalIssueFine = BookIssue::where('status', 'Selesai')
+        ->when($searchIssue, function ($q) use ($searchIssue) {
+            $q->where(function ($sub) use ($searchIssue) {
+                $sub->where('student_name', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('student_nis', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('student_class', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('issue_type', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('status', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('fine_amount', 'like', '%' . $searchIssue . '%')
+                    ->orWhereHas('book', function ($book) use ($searchIssue) {
+                        $book->where('book_code', 'like', '%' . $searchIssue . '%')
+                            ->orWhere('title', 'like', '%' . $searchIssue . '%');
+                    });
+            });
+        })
+        ->sum('fine_amount');
 
     $totalBorrow = Borrowing::whereIn('status', ['Dipinjam', 'Kembali', 'Terlambat'])->count();
     $countDiajukan = Borrowing::where('status', 'Diajukan')->count();
@@ -525,6 +543,10 @@
             $q->where(function ($sub) use ($searchIssue) {
                 $sub->where('student_name', 'like', '%' . $searchIssue . '%')
                     ->orWhere('student_nis', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('student_class', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('issue_type', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('status', 'like', '%' . $searchIssue . '%')
+                    ->orWhere('fine_amount', 'like', '%' . $searchIssue . '%')
                     ->orWhereHas('book', function ($book) use ($searchIssue) {
                         $book->where('book_code', 'like', '%' . $searchIssue . '%')
                             ->orWhere('title', 'like', '%' . $searchIssue . '%');
@@ -1400,6 +1422,29 @@
                             <strong>Keterangan:</strong>
                             daftar ini menampilkan kasus buku hilang atau rusak yang dilaporkan dari transaksi peminjaman aktif maupun terlambat.
                         </div>
+
+                        <div class="print-note-box" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:10px;">
+                            <div>
+                                <strong>Total Kasus:</strong><br>
+                                {{ $countIssueTotal }}
+                            </div>
+
+                            <div>
+                                <strong>Buku Hilang:</strong><br>
+                                {{ $countIssueLost }}
+                            </div>
+
+                            <div>
+                                <strong>Buku Rusak Belum Selesai:</strong><br>
+                                {{ $countIssueDamaged }}
+                            </div>
+
+                            <div>
+                                <strong>Total Denda:</strong><br>
+                                Rp {{ number_format($totalIssueFine, 0, ',', '.') }}
+                            </div>
+                        </div>
+
                         <hr>
                     </div>
 
@@ -1439,7 +1484,7 @@
                                     <label class="form-label small mb-1">Pencarian Buku Hilang / Rusak</label>
                                     <input type="text" name="search_issue" class="form-control form-control-sm"
                                            value="{{ $searchIssue }}"
-                                           placeholder="Cari nama siswa / NIS / ID buku / judul buku">
+                                           placeholder="Cari nama siswa / NIS / ID buku / judul buku / hilang / rusak / selesai">
                                 </div>
 
                                 <div class="col-md-4 d-flex gap-2 flex-wrap">
@@ -1471,7 +1516,7 @@
                             <div class="card-body">
                                 <div class="stat-label mb-1">Buku Rusak</div>
                                 <div class="stat-value mb-1" style="color: #f97316;">{{ $countIssueDamaged }}</div>
-                                <div class="small-muted">Kasus buku yang rusak dan perlu tindak lanjut.</div>
+                                <div class="small-muted">Buku rusak yang belum selesai diperbaiki.</div>
                             </div>
                         </div>
 
@@ -1480,6 +1525,16 @@
                                 <div class="stat-label mb-1">Belum Selesai</div>
                                 <div class="stat-value mb-1" style="color: var(--green-main);">{{ $countIssueOpen }}</div>
                                 <div class="small-muted">Status Dilaporkan atau Diproses.</div>
+                            </div>
+                        </div>
+
+                        <div class="card stat-card-borrow">
+                            <div class="card-body">
+                                <div class="stat-label mb-1">Total Biaya Kasus</div>
+                                <div class="stat-value mb-1" style="color: var(--green-main);">
+                                    Rp {{ number_format($totalIssueFine, 0, ',', '.') }}
+                                </div>
+                                <div class="small-muted">Total denda/penggantian kasus yang sudah selesai.</div>
                             </div>
                         </div>
                     </div>
