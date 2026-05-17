@@ -217,7 +217,7 @@
             </div>
             <div class="mini-row">
                 <span>Anggota Terdaftar</span>
-                <span class="mini-pill">Siswa & Guru</span>
+                <span class="mini-pill">Siswa/siswi</span>
             </div>
             <div class="mini-row">
                 <span>Aktivitas Bulanan</span>
